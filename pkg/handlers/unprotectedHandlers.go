@@ -40,7 +40,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !utils.ValidateLoginOrSigin(&credentials) {
+	if !utils.ValidateLoginOrSiginCredentials(&credentials) {
 		utils.JSONResponse(&w, "missing credentials", http.StatusBadRequest)
 		return
 	}
@@ -55,12 +55,12 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	id := 32 //TODO: take the id from the db
 	expirationTime := time.Now().Add(time.Hour * 24).Unix()
-	claims := utils.Claims{
+	claims := services.Claims{
 		Id:  id,
 		Exp: expirationTime,
 	}
 
-	tokenString, err := utils.GenerateJWTtoken([]byte("secret-key"), claims)
+	tokenString, err := services.GenerateJWTtoken([]byte("secret-key"), claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return
@@ -92,7 +92,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !utils.ValidateLoginOrSigin(&credentials) {
+	if !utils.ValidateLoginOrSiginCredentials(&credentials) {
 		utils.JSONResponse(&w, "missing credentials", http.StatusBadRequest)
 		return
 	}
@@ -101,12 +101,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	id := 32 //TODO: take the id from the db
 	expirationTime := time.Now().Add(time.Hour * 24).Unix()
-	claims := utils.Claims{
+	claims := services.Claims{
 		Id:  id,
 		Exp: expirationTime,
 	}
 
-	tokenString, err := utils.GenerateJWTtoken([]byte("secret-key"), claims)
+	tokenString, err := services.GenerateJWTtoken([]byte("secret-key"), claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return

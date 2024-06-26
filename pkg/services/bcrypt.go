@@ -1,9 +1,12 @@
 package services
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
+	"golang.org/x/crypto/bcrypt"
+)
 
 func GenerateBcryptPassword(password string) (string, error) {
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password),bcrypt.MaxCost) //cost can be changes according too
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password),config.BcryptHashingCost) 
 	if err != nil {
 		return "", err
 	}

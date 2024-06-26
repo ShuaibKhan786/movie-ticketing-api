@@ -2,10 +2,11 @@ package middlewares
 
 import (
 	"context"
-	"time"
 	"net/http"
+	"time"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
@@ -20,7 +21,7 @@ func EnsureAuth(next http.Handler) http.Handler {
 
 		tokenString := bearerSchema[len(config.AuthSchema):]
 
-		claims, err := utils.ParseJWTtoken([]byte("secret-key"), tokenString)
+		claims, err := services.ParseJWTtoken([]byte("secret-key"), tokenString)
 		if err != nil {
 			utils.JSONResponse(&w,err.Error(),http.StatusUnauthorized)
 			return
