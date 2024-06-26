@@ -7,6 +7,7 @@ import (
 
 	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	models "github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
 	utils "github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
@@ -43,6 +44,13 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		utils.JSONResponse(&w, "missing credentials", http.StatusBadRequest)
 		return
 	}
+
+	hashPassword, err := services.GenerateBcryptPassword(credentials.Password)
+	if err != nil {
+		utils.JSONResponse(&w, "error encrypting password", http.StatusInternalServerError)
+	}
+	credentials.Password = hashPassword
+
 	//TODO: save the user details to db according to roles
 
 	id := 32 //TODO: take the id from the db
