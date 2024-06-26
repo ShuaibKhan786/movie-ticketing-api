@@ -1,9 +1,6 @@
 package middlewares
 
-import (
-	"log"
-	"net/http"
-)
+import "net/http"
 
 type Middleware func(http.Handler) http.Handler
 
@@ -17,10 +14,5 @@ func CreateStack(xs ...Middleware) Middleware {
 	}
 }
 
-func Logging(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Println("Before")
-		defer log.Println("After")
-		next.ServeHTTP(w,r) //actual function that wrapped up
-	})
-}
+
+

@@ -4,24 +4,31 @@ import (
 	"net/http"
 
 	handlers "github.com/ShuaibKhan786/movie-ticketing-api/pkg/handlers"
+	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
+	middlewares "github.com/ShuaibKhan786/movie-ticketing-api/pkg/middlewares"
 )
 
 
 func main() {
-	normalRouter := http.NewServeMux() //routes that need no auth
-	handlers.RegisterNormalRouter(normalRouter)
+	unprotectedRouter := http.NewServeMux() //routes that need no auth
+	handlers.RegisterUnprotectedRouter(unprotectedRouter)
 
-	adminRouter := http.NewServeMux() //routes that needs auth
-	handlers.RegisterAdminRouter(adminRouter)
+	protectedRouter := http.NewServeMux() //routes that needs auth
+	handlers.RegisterProtectedRouter(protectedRouter)
 
-	normalRouter.Handle("/",adminRouter) //merging the routes
+	unprotectedRouter.Handle("/",middlewares.EnsureAuth(protectedRouter)) //merging the routes
 
 	versionRouter := http.NewServeMux() //adding a version to all the routes
-	handlers.RegisterVersion(normalRouter,versionRouter)
+	handlers.RegisterVersion(unprotectedRouter,versionRouter,config.APIversion)
+
+	middlewareStack := middlewares.CreateStack(
+		middlewares.Logging,
+		middlewares.AllowCors,
+	)
 
 	server := http.Server{
 		Addr: ":8090",
-		Handler: versionRouter,
+		Handler: middlewareStack(versionRouter),
 	}
 
 	server.ListenAndServe()
