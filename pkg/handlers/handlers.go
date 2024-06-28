@@ -7,6 +7,9 @@ import (
 func RegisterUnprotectedRouter(router *http.ServeMux) {
 	router.HandleFunc("GET /movies/ongoing",OnGoing)
 	router.HandleFunc("GET /movies/commingsonn",CommingSoon)
+}
+
+func RegisterAccountRouter(router *http.ServeMux) {
 	router.HandleFunc("POST /user/signup",Signup)
 	router.HandleFunc("POST /admin/signup",Signup)
 	router.HandleFunc("POST /login",Login)

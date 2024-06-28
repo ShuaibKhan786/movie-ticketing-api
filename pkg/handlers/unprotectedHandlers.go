@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"io"
 	"net/http"
 	"time"
 
 	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	models "github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
+	services "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
 	utils "github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
@@ -22,28 +21,9 @@ func OnGoing(w http.ResponseWriter, r *http.Request) {
 
 // Signup handler for both user/admin
 func Signup(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		utils.JSONResponse(&w, "failed to read the body", http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
+	credentials := r.Context().Value(config.CredentialsContextKey).(models.UserAdminCredentials)
 
-	if !utils.IsValidJson(body) {
-		utils.JSONResponse(&w, "invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	var credentials models.UserAdminCredentials
-	if err := utils.DecodeJson(body, &credentials); err != nil {
-		utils.JSONResponse(&w, "invalid credentials", http.StatusBadRequest)
-		return
-	}
-
-	if !utils.ValidateLoginOrSiginCredentials(&credentials) {
-		utils.JSONResponse(&w, "missing credentials", http.StatusBadRequest)
-		return
-	}
+	//TODO: verification for email address
 
 	hashPassword, err := services.GenerateBcryptPassword(credentials.Password)
 	if err != nil {
@@ -60,7 +40,8 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 		Exp: expirationTime,
 	}
 
-	tokenString, err := services.GenerateJWTtoken([]byte("secret-key"), claims)
+	secretKey := config.Env.JWTSECRETKEY
+	tokenString, err := services.GenerateJWTtoken(secretKey, claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return
@@ -74,28 +55,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 // Login handler for both user/admin
 func Login(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		utils.JSONResponse(&w, "failed to read the body", http.StatusInternalServerError)
-		return
-	}
-	defer r.Body.Close()
-
-	if !utils.IsValidJson(body) {
-		utils.JSONResponse(&w, "invalid request payload", http.StatusBadRequest)
-		return
-	}
-
-	var credentials models.UserAdminCredentials
-	if err := utils.DecodeJson(body, &credentials); err != nil {
-		utils.JSONResponse(&w, "invalid credentials", http.StatusBadRequest)
-		return
-	}
-
-	if !utils.ValidateLoginOrSiginCredentials(&credentials) {
-		utils.JSONResponse(&w, "missing credentials", http.StatusBadRequest)
-		return
-	}
+	// credentials := r.Context().Value(config.CredentialsContextKey).(models.UserAdminCredentials)
 
 	//TODO: //validate the login from db by using bcrypt
 
@@ -106,7 +66,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		Exp: expirationTime,
 	}
 
-	tokenString, err := services.GenerateJWTtoken([]byte("secret-key"), claims)
+	secretKey := config.Env.JWTSECRETKEY
+	tokenString, err := services.GenerateJWTtoken(secretKey, claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return

@@ -10,7 +10,7 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
-func EnsureAuth(next http.Handler) http.Handler {
+func EnsureTokenAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		bearerSchema := r.Header.Get(config.AuthHeader)
 
@@ -20,8 +20,9 @@ func EnsureAuth(next http.Handler) http.Handler {
 		}
 
 		tokenString := bearerSchema[len(config.AuthSchema):]
+		secretKey := config.Env.JWTSECRETKEY
 
-		claims, err := services.ParseJWTtoken([]byte("secret-key"), tokenString)
+		claims, err := services.ParseJWTtoken(secretKey, tokenString)
 		if err != nil {
 			utils.JSONResponse(&w,err.Error(),http.StatusUnauthorized)
 			return

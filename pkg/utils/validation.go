@@ -1,25 +1,34 @@
 package utils
 
 import (
+	"errors"
+
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 
+	"net/mail"
 	"strings"
 )
 
-func ValidateLoginOrSiginCredentials(loginCredentials *models.UserAdminCredentials) bool {
-    if loginCredentials.Role != config.AdminRole && loginCredentials.Role != config.UserRole {
-        return false
-    }
+func ValidateLoginOrSigninCredentials(credentials *models.UserAdminCredentials) error {
+	if credentials.Role != config.AdminRole && credentials.Role != config.UserRole {
+		return errors.New("role must be either admin / user")
+	}
 
-    if strings.TrimSpace(loginCredentials.Email) == "" {
-        return false
-    }
+	if !isValidEmail(credentials.Email) {
+		return errors.New("invalid email address")
+	}
 
-    password := strings.TrimSpace(loginCredentials.Password)
-    if len(password) < 12 || len(password) > 24 {
-        return false
-    }
+	password := strings.TrimSpace(credentials.Password)
+	if len(password) < 8 || len(password) > 12 {
+		return errors.New("invalid password")
+	}
 
-    return true
+    return nil
+}
+
+
+func isValidEmail(email string) bool{
+    _, err := mail.ParseAddress(email)
+    return err == nil
 }
