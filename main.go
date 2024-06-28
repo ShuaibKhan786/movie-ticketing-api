@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	//loading the env into a global Env of ENV struct
 	if !config.LoadConfig() {
 		log.Fatal("Error in loading the configuration")
 	}

@@ -6,7 +6,7 @@ import (
 
 	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	models "github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
-	services "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
+	security "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/security"
 	utils "github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
@@ -25,7 +25,7 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	//TODO: verification for email address
 
-	hashPassword, err := services.GenerateBcryptPassword(credentials.Password)
+	hashPassword, err := security.GenerateBcryptPassword(credentials.Password)
 	if err != nil {
 		utils.JSONResponse(&w, "error encrypting password", http.StatusInternalServerError)
 	}
@@ -35,13 +35,13 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 
 	id := 32 //TODO: take the id from the db
 	expirationTime := time.Now().Add(time.Hour * 24).Unix()
-	claims := services.Claims{
+	claims := security.Claims{
 		Id:  id,
 		Exp: expirationTime,
 	}
 
 	secretKey := config.Env.JWTSECRETKEY
-	tokenString, err := services.GenerateJWTtoken(secretKey, claims)
+	tokenString, err := security.GenerateJWTtoken(secretKey, claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return
@@ -61,13 +61,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	id := 32 //TODO: take the id from the db
 	expirationTime := time.Now().Add(time.Hour * 24).Unix()
-	claims := services.Claims{
+	claims := security.Claims{
 		Id:  id,
 		Exp: expirationTime,
 	}
 
 	secretKey := config.Env.JWTSECRETKEY
-	tokenString, err := services.GenerateJWTtoken(secretKey, claims)
+	tokenString, err := security.GenerateJWTtoken(secretKey, claims)
 	if err != nil {
 		utils.JSONResponse(&w, "error generating tokens", http.StatusInternalServerError)
 		return

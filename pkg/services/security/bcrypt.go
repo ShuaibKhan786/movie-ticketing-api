@@ -1,4 +1,4 @@
-package services
+package security
 
 import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"

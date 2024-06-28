@@ -1,4 +1,4 @@
-package services
+package database
 
 import (
 	"database/sql"
@@ -38,5 +38,6 @@ func InitDB() error {
 
 		err = nil
 	})
+
 	return err
 }

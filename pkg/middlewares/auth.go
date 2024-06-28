@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services"
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
+	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
+	security "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/security"
+	utils "github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
 func EnsureTokenAuth(next http.Handler) http.Handler {
@@ -22,7 +22,7 @@ func EnsureTokenAuth(next http.Handler) http.Handler {
 		tokenString := bearerSchema[len(config.AuthSchema):]
 		secretKey := config.Env.JWTSECRETKEY
 
-		claims, err := services.ParseJWTtoken(secretKey, tokenString)
+		claims, err := security.ParseJWTtoken(secretKey, tokenString)
 		if err != nil {
 			utils.JSONResponse(&w,err.Error(),http.StatusUnauthorized)
 			return
