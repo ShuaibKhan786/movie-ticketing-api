@@ -9,6 +9,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type Query string
+
 var (
 	db *sql.DB
 	once sync.Once
@@ -27,7 +29,7 @@ func InitDB() error {
 			return
 		} 
 
-		if errPing := db.Ping(); err != nil {
+		if errPing := db.Ping(); errPing != nil {
 			err = errPing
 			return 
 		}
@@ -40,4 +42,10 @@ func InitDB() error {
 	})
 
 	return err
+}
+
+func CloseDB() {
+	if err := db.Ping(); err == nil {
+		db.Close()
+	}
 }

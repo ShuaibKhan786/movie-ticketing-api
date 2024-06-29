@@ -8,7 +8,7 @@ import (
 
 
 type Claims struct {
-	Id int
+	Id int64
 	Exp int64  
 }
 
@@ -58,7 +58,7 @@ func ParseJWTtoken(secretKey []byte, tokenString string) (Claims, error) {
 		}
 
 		return Claims{
-			Id: int(id),
+			Id: int64(id),
 			Exp: int64(exp),
 		}, nil
 

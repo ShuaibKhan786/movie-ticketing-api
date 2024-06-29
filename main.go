@@ -7,12 +7,17 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/handlers"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/middlewares"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
 )
 
 func main() {
 	//loading the env into a global Env of ENV struct
 	if !config.LoadConfig() {
 		log.Fatal("Error in loading the configuration")
+	}
+
+	if err := database.InitDB(); err != nil {
+		log.Fatal(err)
 	}
 
 	// Unprotected routes (no token auth required)
