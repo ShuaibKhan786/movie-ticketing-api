@@ -1,12 +1,7 @@
 package handlers
 
-import (
-	"net/http"
-
-)
-
-
+import "net/http"
 
 func UserDetails(w http.ResponseWriter, r *http.Request) {
-
+	
 }

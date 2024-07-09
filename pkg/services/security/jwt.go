@@ -9,6 +9,9 @@ import (
 
 type Claims struct {
 	Id int64
+	Role string
+	// Hall bool
+	// Email bool
 	Exp int64  
 }
 
@@ -19,6 +22,7 @@ func GenerateJWTtoken(secretKey []byte, claims Claims) (string, error) {
 		jwt.MapClaims{
 			"id": claims.Id,
 			"exp": claims.Exp,
+			"role": claims.Role,
 		},
 	)
 
@@ -30,7 +34,6 @@ func GenerateJWTtoken(secretKey []byte, claims Claims) (string, error) {
 	return tokenString, nil
 }
 
-
 func ParseJWTtoken(secretKey []byte, tokenString string) (Claims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -40,6 +43,16 @@ func ParseJWTtoken(secretKey []byte, tokenString string) (Claims, error) {
 	})
 
 	if err != nil {
+		// Check if the error is due to token expiration
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			if claims, ok := token.Claims.(jwt.MapClaims); ok {
+				parsedClaims, errClaims := parseTheClaims(claims)
+				if errClaims != nil {
+					return Claims{}, errClaims
+				}
+				return *parsedClaims, err
+			}
+		}
 		return Claims{}, err
 	}
 
@@ -48,22 +61,28 @@ func ParseJWTtoken(secretKey []byte, tokenString string) (Claims, error) {
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		id, idOk := claims["id"].(float64)
-		exp, expOk := claims["exp"].(float64)
-
-		if !idOk || !expOk {
-			fmt.Println(idOk,id)
-			fmt.Println(expOk,exp)
-			return Claims{}, errors.New("invalid token claims")
+		parsedClaims, err := parseTheClaims(claims)
+		if err != nil {
+			return Claims{}, err
 		}
-
-		return Claims{
-			Id: int64(id),
-			Exp: int64(exp),
-		}, nil
-
-	} else {
-		return Claims{}, errors.New("invalid token")
+		return *parsedClaims, nil
 	}
+
+	return Claims{}, errors.New("invalid token")
 }
 
+func parseTheClaims(claims jwt.MapClaims) (*Claims, error) {
+	id, idOk := claims["id"].(float64)
+	exp, expOk := claims["exp"].(float64)
+	role, roleOk := claims["role"].(string)
+
+	if !idOk || !expOk || !roleOk {
+		return nil, errors.New("invalid token claims")
+	}
+
+	return &Claims{
+		Id:   int64(id),
+		Exp:  int64(exp),
+		Role: role,
+	}, nil
+}

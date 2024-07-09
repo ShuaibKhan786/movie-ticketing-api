@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/handlers"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/middlewares"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
+	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
 )
 
 func main() {
@@ -20,6 +22,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := redisdb.InitRedis(); err != nil {
+		log.Fatal(err)
+	}
+
 	// Unprotected routes (no token auth required)
 	unprotectedRouter := http.NewServeMux()
 	handlers.RegisterUnprotectedRouter(unprotectedRouter)
@@ -28,22 +34,10 @@ func main() {
 	protectedRouter := http.NewServeMux()
 	handlers.RegisterProtectedRouter(protectedRouter)
 
-	// account routes (signup, login)
-	accountRouter := http.NewServeMux()
-	handlers.RegisterAccountRouter(accountRouter)
-
-	// Middleware stack for account routes
-	accountMiddlewareStack := middlewares.CreateStack(
-		middlewares.IsValidJSONCred,
-		middlewares.IsValidCredentials,
-		middlewares.IsEmailExists,
-	)
-	accountRouterWithMiddleware := accountMiddlewareStack(accountRouter)
 
 	protectedRouterWithMiddleware := middlewares.EnsureTokenAuth(protectedRouter)
 
 	// Combine unprotected and protected routers with authentication middleware
-	unprotectedRouter.Handle("/account/", http.StripPrefix("/account", accountRouterWithMiddleware)) // merging with main router
 	unprotectedRouter.Handle("/auth/", http.StripPrefix("/auth", protectedRouterWithMiddleware))
 
 	// Add versioning to the routes
@@ -57,8 +51,9 @@ func main() {
 	)
 
 	// Final server setup with all middlewares and routers
+	addr := fmt.Sprintf(":%s",config.Env.PORT)
 	server := http.Server{
-		Addr:    ":8090",
+		Addr:    addr,
 		Handler: commonMiddlewareStack(versionRouter),
 	}
 

@@ -5,18 +5,20 @@ import (
 )
 
 func RegisterUnprotectedRouter(router *http.ServeMux) {
-	router.HandleFunc("GET /movies/ongoing",OnGoing)
-	router.HandleFunc("GET /movies/commingsonn",CommingSoon)
+	// router.HandleFunc("GET /movies/ongoing",OnGoing)
+	// router.HandleFunc("GET /movies/commingsonn",CommingSoon)
+	router.HandleFunc("POST /oauth/provider/signin",SignIn)
+	router.HandleFunc("GET /oauth/provider/callback",Callback)
 }
 
-func RegisterAccountRouter(router *http.ServeMux) {
-	router.HandleFunc("POST /user/signup",Signup)
-	router.HandleFunc("POST /admin/signup",Signup)
-	router.HandleFunc("POST /login",Login)
-}
+
 
 func RegisterProtectedRouter(router *http.ServeMux) {
-	router.HandleFunc("POST /user/details",UserDetails)
+	router.HandleFunc("GET /refresh/token",RefreshToken)
+	router.HandleFunc("DELETE /logout",Logout)
+	router.HandleFunc("POST /admin/hall/register",HallRegister)
+	router.HandleFunc("GET /admin/hall/metadata",HallMetadata)
+	router.HandleFunc("POST /user/details",UserDetails) 	
 }
 
 func RegisterVersion(router *http.ServeMux,versionRouter *http.ServeMux, apiversion string) {

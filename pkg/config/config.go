@@ -1,14 +1,15 @@
 package config
 
-type ContextKeyId string
+type ContextKeyClaims string
 type ContextKeyCredentials string
 
 const (
 	APIversion string = "/api/v1"
-	AuthHeader string = "Authorization"
-	AuthSchema string = "Bearer "
+	OAuthCookieName string = "oauth_credentials"
+	JWTAuthCookieName string = "Authorization"
+	JWTRefreshTokenCookieName  string = "RefreshToken"
 
-	IdContextKey ContextKeyId = "id"
+	ClaimsContextKey ContextKeyClaims = "claims"
 	CredentialsContextKey ContextKeyCredentials = "credentials"
 
 	AdminRole string = "admin"

@@ -1,21 +1,24 @@
 package database
 
-import "fmt"
+import (
+	"fmt"
+)
 
-const QueryIsExists Query = `SELECT EXISTS(SELECT 1 FROM %s WHERE %s=?)`
 
-func (query *Query) DBIsExists(whichTab,whichCol,colVal string) (bool, error) {
-	processedQuery := fmt.Sprintf(string(*query), whichTab, whichCol)
+func IsValueExists(whichTable, whichColumn string, columnValue any) (bool, error) {
+	const queryTemplate = `SELECT EXISTS(SELECT 1 FROM %s WHERE %s=?)`
+	
+	query := fmt.Sprintf(queryTemplate, whichTable, whichColumn)
 
-	stmt, err := db.Prepare(processedQuery)
+	stmt, err := db.Prepare(query)
 	if err != nil {
-		return false, dbError(ErrDBPrepareStmt, err)
+		return false, fmt.Errorf("failed to prepare statement: %w", err)
 	}
 	defer stmt.Close()
 
 	var exists bool
-	if err := stmt.QueryRow(colVal).Scan(&exists) ; err != nil {
-		return false, dbError(ErrDBNoRows, err)
+	if err := stmt.QueryRow(columnValue).Scan(&exists); err != nil {
+		return false, fmt.Errorf("query execution failed: %w", err)
 	}
 
 	return exists, nil
