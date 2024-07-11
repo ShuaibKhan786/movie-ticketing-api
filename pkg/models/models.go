@@ -53,6 +53,6 @@ type UserDetails struct {
 }
 
 type Profile struct {
-	Name string
-	PosterUrl string
+	Name string `json:"name"`
+	PosterUrl string `json:"profile_pic_url"`
 }

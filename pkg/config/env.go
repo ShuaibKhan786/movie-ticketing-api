@@ -4,7 +4,7 @@ import (
 	"os"
 	"sync"
 
-	"github.com/joho/godotenv"
+	// "github.com/joho/godotenv"
 )
 
 type ENV struct {
@@ -28,9 +28,10 @@ var (
 )
 
 func LoadConfig() bool {
-	if err := godotenv.Load(); err != nil {
-		return false
-	}
+	// if err := godotenv.Load(); err != nil {
+	// 	fmt.Println(err)
+	// 	return false
+	// }
 	return loadEnv()
 }
 

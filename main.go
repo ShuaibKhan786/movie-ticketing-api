@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/handlers"
@@ -13,18 +14,23 @@ import (
 )
 
 func main() {
+	//just for making sure that 
+	//mysql server database is ready for connection
+	time.Sleep(10 * time.Second)
+
 	//loading the env into a global Env of ENV struct
 	if !config.LoadConfig() {
 		log.Fatal("Error in loading the configuration")
 	}
 
 	if err := database.InitDB(); err != nil {
-		log.Fatal(err)
+		log.Fatal("mysql server", err)
+	}
+	
+	if err := redisdb.InitRedis(); err != nil {
+		log.Fatal("redis server", err)
 	}
 
-	if err := redisdb.InitRedis(); err != nil {
-		log.Fatal(err)
-	}
 
 	// Unprotected routes (no token auth required)
 	unprotectedRouter := http.NewServeMux()

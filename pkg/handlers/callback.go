@@ -31,7 +31,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 
 	token, err := exchangeOAuthCodeForToken(r, credentials)
 	if err != nil {
-		redirectWithError(w, r, "token exchange failed")
+		redirectWithError(w, r, err.Error()+"token exchange failed")
 		return
 	}
 

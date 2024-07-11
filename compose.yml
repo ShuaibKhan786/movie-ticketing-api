@@ -1,0 +1,61 @@
+
+services:
+  movie-ticketing:
+    depends_on:
+      - mysql-server
+      - redis-server
+    build:
+      context: .
+    container_name: movie-ticketing-go-webserver
+    hostname: webserver
+    networks:
+      - movie-ticketing-network
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - PORT=${PORT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - DSN=${DSN}
+      - REDIS_URL=${REDIS_URL}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - REDIRECT_URL=${REDIRECT_URL}
+      - GOOGLE_SCOPE_EMAIL_URL=${GOOGLE_SCOPE_EMAIL_URL}
+      - GOOGLE_SCOPE_PROFILE_URL=${GOOGLE_SCOPE_PROFILE_URL}
+      - GOOGLE_USERINFO_URL=${GOOGLE_USERINFO_URL}
+      - OAUTH_STATE=${OAUTH_STATE}
+      - DEFAULT_ORIGIN=${DEFAULT_ORIGIN}
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  mysql-server:
+    image: mysql:8.4.0
+    container_name: movie-ticketing-mysql
+    hostname: database
+    networks:
+      - movie-ticketing-network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./schema:/docker-entrypoint-initdb.d
+
+  redis-server:
+    image: redis:alpine
+    container_name: movie-ticketing-redis
+    hostname: redis
+    networks:
+      - movie-ticketing-network
+    volumes:
+      - redis_data:/data
+
+networks:
+  movie-ticketing-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  redis_data:

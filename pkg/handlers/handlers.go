@@ -18,7 +18,7 @@ func RegisterProtectedRouter(router *http.ServeMux) {
 	router.HandleFunc("DELETE /logout",Logout)
 	router.HandleFunc("POST /admin/hall/register",HallRegister)
 	router.HandleFunc("GET /admin/hall/metadata",HallMetadata)
-	router.HandleFunc("POST /user/details",UserDetails) 	
+	router.HandleFunc("GET /profile/details",UserDetails) 	
 }
 
 func RegisterVersion(router *http.ServeMux,versionRouter *http.ServeMux, apiversion string) {
