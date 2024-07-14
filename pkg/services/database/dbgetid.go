@@ -2,21 +2,21 @@ package database
 
 import "fmt"
 
+func GetId(whichTable, whichColumn string, columnValue any) (int64, error) {
+	const queryTemplate = `SELECT id from %s WHERE %s=?`
 
-const QueryGetId Query = `SELECT id from %s WHERE %s=?`
+	query := fmt.Sprintf(queryTemplate, whichTable, whichColumn)
 
-func (query *Query) DBGetId(whichTab , whichCol, colVal string,id *int64) error {
-	processedQuery := fmt.Sprintf(string(*query), whichTab, whichCol)
-
-	stmt, err := db.Prepare(processedQuery)
+	var id int64
+	stmt, err := db.Prepare(query)
 	if err != nil {
-		return dbError(ErrDBPrepareStmt, err)
+		return id, fmt.Errorf("failed to prepare statement: %w", err)
 	}
 	defer stmt.Close()
 
-	if err := stmt.QueryRow(colVal).Scan(id) ; err != nil {
-		return dbError(ErrDBNoRows, err)
+	if err := stmt.QueryRow(columnValue).Scan(&id); err != nil {
+		return id, fmt.Errorf("query execution failed: %w", err)
 	}
 
-	return nil
+	return id, nil
 }

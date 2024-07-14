@@ -44,6 +44,7 @@ func InitDB() error {
 	return err
 }
 
+
 func CloseDB() {
 	if err := db.Ping(); err == nil {
 		db.Close()

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"crypto/rand"
 )
 
 func IsValidJson(body []byte) bool{
@@ -21,4 +23,14 @@ func EncodeJson(v interface{}) ([]byte, error) {
 		return nil , err
 	}
 	return data, nil
+}
+
+func GenerateRandomToken(size int) (string, error) {
+    token := make([]byte, size, size)
+    _, err := rand.Read(token)
+    if err != nil {
+        return "", err
+    }
+
+    return base64.URLEncoding.EncodeToString(token), nil
 }
