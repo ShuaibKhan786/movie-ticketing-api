@@ -1,4 +1,4 @@
-package config
+Advances in Neural Information Processing Systems. Vol. 35. Curran Associatespackage config
 
 type ContextKeyId string
 type ContextKeyCredentials string
