@@ -44,8 +44,8 @@ CREATE TABLE `hall_location` (
 CREATE TABLE `hall_seat_layout` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `max_capacity` INT NOT NULL,
-  `rows` INT NOT NULL,
-  `columns` INT NOT NULL,
+  `h_rows` INT NOT NULL,
+  `h_columns` INT NOT NULL,
   `types` VARCHAR(255),
   `layout` TEXT NOT NULL,
   `hall_id` INT
@@ -91,12 +91,14 @@ CREATE TABLE `movie_actor` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `movie_id` INT,
   `actor_id` INT
+  `alias` VARCHAR(255) NULL
 );
 
 CREATE TABLE `movie_actress` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `movie_id` INT,
   `actress_id` INT
+  `alias` VARCHAR(255) NULL
 );
 
 CREATE TABLE `movie_director` (
@@ -114,7 +116,8 @@ CREATE TABLE `movie_producer` (
 CREATE TABLE `movie_show` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `movie_id` INT,
-  `hall_id` INT
+  `hall_id` INT,
+  `status` VARCHAR(255) NOT NULL,
 );
 
 CREATE TABLE `movie_show_timing` (

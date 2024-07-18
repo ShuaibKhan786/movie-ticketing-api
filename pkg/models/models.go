@@ -7,6 +7,13 @@ type SignInCredentials struct {
 	RedirectedURL string `json:"redirected_url"`
 }
 
+
+
+
+
+
+
+
 type Hall struct {
 	Name        string `json:"name"`
 	Manager     string `json:"manager"`
@@ -55,4 +62,51 @@ type UserDetails struct {
 type Profile struct {
 	Name string `json:"name"`
 	PosterUrl string `json:"profile_pic_url"`
+}
+
+
+
+
+
+
+
+
+
+
+type Show struct {
+	Movie           Movie           `json:"movie"`
+	Cast            Cast            `json:"cast"`
+	MovieShowTiming MovieShowTiming `json:"movie_show_timing"`
+}
+
+type Movie struct {
+	Id          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Duration    int64  `json:"duration"`
+	Genre       string `json:"genre"`
+	ReleaseDate string `json:"release_date"`
+}
+
+type Cast struct {
+	Actors   []CastBlueprint `json:"actors"`
+	Actress  []CastBlueprint `json:"actress"`
+	Directors []CastBlueprint `json:"directors"`
+	Producers []CastBlueprint `json:"producers"`
+}
+
+type CastBlueprint struct {
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
+	Alias string `json:"alias"`
+}
+
+type MovieShowTiming struct {
+	ShowTiming []ShowTiming `json:"show_timing"`
+}
+
+type ShowTiming struct {
+	Date  string `json:"show_date"`
+	Start string `json:"show_start"`
+	End   string `json:"show_end"`
 }

@@ -19,6 +19,18 @@ func SetCookie(w *http.ResponseWriter, key string, value string, expiry time.Tim
 	http.SetCookie(*w, &cookie)
 }
 
+func SetCookieWithNoExpiry(w *http.ResponseWriter, key string, value string) {
+	cookie := http.Cookie{
+		Name: key,
+		Value: value,
+		HttpOnly: true,
+		Path: "/",
+		Secure: false,
+		MaxAge: 0,
+	}
+	http.SetCookie(*w, &cookie)
+}
+
 func DeleteCookie(w *http.ResponseWriter, name string) {
     http.SetCookie(*w, &http.Cookie{
         Name:   name,

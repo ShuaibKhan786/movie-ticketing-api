@@ -9,7 +9,7 @@ import (
 )
 
 
-func RegisterHall(ctx context.Context, hall models.Hall, adminId int64) error {
+func RegisterHall(ctx context.Context, hall models.Hall, adminId int64, hallId *int64) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("begin transaction : %w",err)
@@ -34,23 +34,24 @@ func RegisterHall(ctx context.Context, hall models.Hall, adminId int64) error {
 		AdminId: adminId,
 	}
 
-	hallId, err := registerActualHall(ctx, tx, actualHall)
+	
+	tempHallId, err := registerActualHall(ctx, tx, actualHall)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err := registerLocation(ctx, tx, hall.Location, hallId); err != nil {
+	if err := registerLocation(ctx, tx, hall.Location, tempHallId); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err := registeredSeatlayout(ctx, tx, hall.SeatLayout, hallId); err != nil {
+	if err := registeredSeatlayout(ctx, tx, hall.SeatLayout, tempHallId); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err := registerOperation(ctx, tx, hall.OperationTime, hallId); err != nil {
+	if err := registerOperation(ctx, tx, hall.OperationTime, tempHallId); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -59,7 +60,7 @@ func RegisterHall(ctx context.Context, hall models.Hall, adminId int64) error {
 		tx.Rollback()
 		return err
 	}
-
+	*hallId = tempHallId
 	return nil
 }
 

@@ -36,7 +36,7 @@ func EnsureTokenAuth(next http.Handler) http.Handler {
 		if err != nil {
 			switch {
 			case errors.Is(err, jwt.ErrTokenExpired):
-				if isURIContainsThatPattern(r.URL.RequestURI(), "/refresh/token") {
+				if isURIContainsThatPattern(r.URL.Path, "/refresh/token") {
 					goto refreshToken //jump too refreshToken
 				}else {
 					utils.JSONResponse(&w, "access token has expired", http.StatusUnauthorized)
@@ -48,7 +48,7 @@ func EnsureTokenAuth(next http.Handler) http.Handler {
 			}	
 		}
 
-		if isURIContainsThatPattern(r.URL.RequestURI(), "/refresh/token") {
+		if isURIContainsThatPattern(r.URL.Path, "/refresh/token") {
 			utils.JSONResponse(&w, "access token is still valid", http.StatusBadRequest)
 			return
 		}
@@ -56,7 +56,7 @@ func EnsureTokenAuth(next http.Handler) http.Handler {
 		//making sure only the admin role can access admin route 
 		//		-can registered a hall
 		//		-can get the hall metadata
-		if isURIContainsThatPattern(r.URL.RequestURI(),"/admin/")  {
+		if isURIContainsThatPattern(r.URL.Path,"/admin/")  {
 			if claims.Role != config.AdminRole {
 				utils.JSONResponse(&w, "this route is for admin only", http.StatusBadRequest)
 				return

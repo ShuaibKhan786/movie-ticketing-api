@@ -5,10 +5,13 @@ import (
 )
 
 func RegisterUnprotectedRouter(router *http.ServeMux) {
-	// router.HandleFunc("GET /movies/ongoing",OnGoing)
-	// router.HandleFunc("GET /movies/commingsonn",CommingSoon)
 	router.HandleFunc("POST /oauth/provider/signin", SignIn)
 	router.HandleFunc("GET /oauth/provider/callback", Callback)
+	router.HandleFunc("GET /health", Health)
+	router.HandleFunc("GET /movie", SearchMovieByTitle)
+	router.HandleFunc("GET /movies", GetMovies)
+	router.HandleFunc("GET /movie/{id}", GetMovieByID)
+	router.HandleFunc("GET /hall/{id}", GetHallByMovieID) // TODO: implement this handler
 }
 
 func RegisterProtectedRouter(router *http.ServeMux) {
@@ -16,6 +19,8 @@ func RegisterProtectedRouter(router *http.ServeMux) {
 	router.HandleFunc("DELETE /logout", Logout)
 	router.HandleFunc("POST /admin/hall/register", HallRegister)
 	router.HandleFunc("GET /admin/hall/metadata", HallMetadata)
+	router.HandleFunc("POST /admin/hall/show/register", ShowRegister)
+	router.HandleFunc("GET /admin/cast", SearchCast)
 	router.HandleFunc("GET /profile/details", UserDetails)
 }
 

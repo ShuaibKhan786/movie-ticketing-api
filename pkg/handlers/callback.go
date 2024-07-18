@@ -41,7 +41,7 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := registerUserIfNotExists(credentials, userDetails); err != nil {
+	if err := registerUserIfNotExists(&w, credentials, userDetails); err != nil {
 		redirectWithError(w, r, err.Error())
 		return
 	}
@@ -54,6 +54,9 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	utils.DeleteCookie(&w, config.OAuthCookieName)
 	http.Redirect(w, r, credentials.RedirectedURL, http.StatusPermanentRedirect)
 }
+
+
+
 
 func getCredentialsFromCookie(r *http.Request) (models.SignInCredentials, error) {
 	cookie, err := r.Cookie(config.OAuthCookieName)
@@ -118,7 +121,7 @@ func getUserDetailsFromProvider(token *oauth2.Token, provider string) (map[strin
 	return userDetails, nil
 }
 
-func registerUserIfNotExists(credentials models.SignInCredentials, userDetails map[string]interface{}) error {
+func registerUserIfNotExists(w *http.ResponseWriter,credentials models.SignInCredentials, userDetails map[string]interface{}) error {
 	email := userDetails["email"].(string)
 	exists, err := database.IsValueExists(credentials.Role, "email", email)
 	if err != nil {
@@ -129,7 +132,10 @@ func registerUserIfNotExists(credentials models.SignInCredentials, userDetails m
 		modelUserDetails := structureUserDetails(userDetails)
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		return database.RegisterUserDetails(ctx, modelUserDetails, credentials.Role)
+		if err := database.RegisterUserDetails(ctx, modelUserDetails, credentials.Role);
+		err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -168,7 +174,7 @@ func generateAndSetTokens(w http.ResponseWriter, credentials models.SignInCreden
 		return err
 	}
 
-	utils.SetCookie(&w, config.JWTRefreshTokenCookieName, refreshToken, cookieExp)
+	utils.SetCookie(&w, config.RefreshTokenCookieName, refreshToken, cookieExp)
 	return nil
 }
 
