@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
+	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/security"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
@@ -57,13 +59,24 @@ func HallRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 
-	parentCtx := context.TODO()
-	childCtx, cancel := context.WithCancel(parentCtx)
-	defer cancel()
-	if err := database.RegisterHall(childCtx, hallMetadata, claims.Id); err != nil {
+	//registered the hall Metadata to the database
+	databaseCtx, dbCancel := context.WithCancel(context.TODO())
+	defer dbCancel()
+	var hallId int64
+	if err := database.RegisterHall(databaseCtx, hallMetadata, claims.Id, &hallId); err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Register hall in Redis
+	redisCtx, redisCancel := context.WithCancel(context.Background())
+	defer redisCancel()
+	redisKey := fmt.Sprintf("hall:registered:%s:%d", claims.Role, claims.Id)
+	if err := redisdb.Set(redisCtx, redisKey, hallId, config.RedisZeroExpirationTime); err != nil {
+		utils.JSONResponse(&w, "failed to update Redis", http.StatusInternalServerError)
+		return
+	}
+
 	
 	utils.JSONResponse(&w,"hall registered successfully", http.StatusCreated)
 }

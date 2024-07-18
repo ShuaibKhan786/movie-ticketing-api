@@ -29,7 +29,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	utils.DeleteCookie(&w, config.JWTAuthCookieName)
-	utils.DeleteCookie(&w, config.JWTRefreshTokenCookieName)
+	utils.DeleteCookie(&w, config.RefreshTokenCookieName)
 
 	utils.JSONResponse(&w, "successfully logout", http.StatusOK)
 }

@@ -32,5 +32,5 @@ func GenerateRandomToken(size int) (string, error) {
         return "", err
     }
 
-    return base64.URLEncoding.EncodeToString(token), nil
+    return base64.StdEncoding.EncodeToString(token), nil
 }

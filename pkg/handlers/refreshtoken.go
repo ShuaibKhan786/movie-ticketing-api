@@ -23,7 +23,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(claims)
 
-	cookie, err := r.Cookie(config.JWTRefreshTokenCookieName)
+	cookie, err := r.Cookie(config.RefreshTokenCookieName)
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie):

@@ -20,7 +20,7 @@ FROM scratch AS final-stage
 WORKDIR /usr/local/bin
 
 
-COPY --from=alpine:3.20 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=build-stage /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 
 COPY --from=build-stage /home/server ./
