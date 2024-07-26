@@ -24,6 +24,7 @@ func main() {
 	}
 
 	if err := database.InitDB(); err != nil {
+		database.CloseDB()
 		log.Fatal("mysql server", err)
 	}
 	

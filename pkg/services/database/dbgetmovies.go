@@ -14,7 +14,7 @@ func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset i
 		INNER JOIN (
 			SELECT ms.movie_id
 			FROM movie_show ms
-			INNER JOIN movie_show_timing mst
+			INNER JOIN movie_show_dates mst
 			ON ms.id = mst.movie_show_id
 			WHERE ms.status = ? AND mst.show_date >= ?
 			GROUP BY ms.movie_id

@@ -16,7 +16,7 @@ import (
 // will send all the movie details
 
 func GetMovieByID(w http.ResponseWriter, r *http.Request) {
-	movieId, err := getMovieIDFromPathParameter(r)
+	movieId, err := getIDFromPathParameter(r)
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
 		return
@@ -32,7 +32,7 @@ func GetMovieByID(w http.ResponseWriter, r *http.Request) {
 
 	jsonMovieDetails, err := utils.EncodeJson(&movieDetails)
 	if err != nil {
-		utils.JSONResponse(&w, "error encoding movies details to JSON", http.StatusNotFound)
+		utils.JSONResponse(&w, "error encoding movies details to JSON", http.StatusInternalServerError)
 		return
 	}
 	
@@ -41,15 +41,15 @@ func GetMovieByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonMovieDetails)
 }
 
-func getMovieIDFromPathParameter(r *http.Request) (int64, error) {
+func getIDFromPathParameter(r *http.Request) (int64, error) {
 	movieIDStr := r.PathValue("id")
 	if movieIDStr == "" {
-		return 0, errors.New("missing movie id path parameter")
+		return 0, errors.New("missing id from path parameter")
 	}
 
 	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
 	if err != nil {
-		return 0, errors.New("invalid movie id")
+		return 0, errors.New("invalid id")
 	}
 
 	return movieID, nil

@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"sync"
+	"time"
 
 	config "github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 
@@ -34,7 +35,7 @@ func InitDB() error {
 			return 
 		}
 
-		db.SetConnMaxLifetime(0)
+		db.SetConnMaxLifetime(5 * time.Minute)
 		db.SetConnMaxIdleTime(10)
 		db.SetMaxOpenConns(10)
 

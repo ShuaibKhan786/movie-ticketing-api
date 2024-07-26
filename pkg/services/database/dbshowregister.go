@@ -110,22 +110,41 @@ func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64) 
 	return showId, nil
 }
 
-func registerShowTimings(ctx context.Context, tx *sql.Tx, timings models.MovieShowTiming, showId int64) error {
-	const query = `INSERT INTO movie_show_timing (show_date, show_start, show_end, movie_show_id) VALUES (?, ?, ?, ?);`
+func registerShowTimings(ctx context.Context, tx *sql.Tx, dates []models.ShowDate, showId int64) error {
+	const dateQuery = `INSERT INTO movie_show_dates (show_date, movie_show_id) VALUES (?, ?);`
+	const timingQuery = `INSERT INTO movie_show_timings (show_timing, movie_show_dates_id) VALUES (?, ?);`
 
-	stmt, err := tx.PrepareContext(ctx, query)
+	stmtDate, err := tx.PrepareContext(ctx, dateQuery)
 	if err != nil {
 		return fmt.Errorf("prepare statement: %w", err)
 	}
-	defer stmt.Close()
+	defer stmtDate.Close()
 
-	for _, timing := range timings.ShowTiming {
-		if _, err := stmt.ExecContext(ctx, 
-			timing.Date,
-			timing.Start,
-			timing.End,
-			showId); err != nil {
+	stmtTiming, err := tx.PrepareContext(ctx, timingQuery)
+	if err != nil {
+		return fmt.Errorf("prepare statement: %w", err)
+	}
+	defer stmtTiming.Close()
+
+	for _, date := range dates {
+		res, err := stmtDate.ExecContext(ctx, 
+			date.Date,
+			showId); 
+		if err != nil {
 			return fmt.Errorf("execution: %w", err)
+		}
+
+		datesId, err := res.LastInsertId()
+		if err != nil {
+			return fmt.Errorf("error in getting the last inserted id: %w",err)
+		}
+
+		for _, timing := range date.Timing {
+			if _, err := stmtTiming.ExecContext(ctx, 
+				timing,
+				datesId); err != nil {
+				return fmt.Errorf("execution: %w", err)
+			}
 		}
 	}
 

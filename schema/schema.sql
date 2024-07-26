@@ -51,6 +51,15 @@ CREATE TABLE `hall_seat_layout` (
   `hall_id` INT
 );
 
+CREATE TABLE `seat_type` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `name` VARCHAR(255),
+  `start` INT NOT NULL,
+  `end` INT NOT NULL,
+  `price` INT NOT NULL,
+  `hall_seat_layout` INT NOT NULL,
+);
+
 CREATE TABLE `hall_operation_time` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `open_time` TIME NOT NULL,
@@ -120,12 +129,16 @@ CREATE TABLE `movie_show` (
   `status` VARCHAR(255) NOT NULL,
 );
 
-CREATE TABLE `movie_show_timing` (
+CREATE TABLE `movie_show_dates` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `show_date` DATE NOT NULL,
-  `show_start` TIME NOT NULL,
-  `show_end` TIME NOT NULL,
   `movie_show_id` INT
+);
+
+CREATE TABLE `movie_show_timings` (
+  `id` INT PRIMARY KEY AUTO_INCREMENT,
+  `show_timing` TIME NOT NULL,
+  `movie_show_dates_id` INT NOT NULL
 );
 
 CREATE TABLE `booking` (
@@ -151,6 +164,8 @@ ALTER TABLE `hall` ADD FOREIGN KEY (`admin_id`) REFERENCES `admin` (`id`);
 ALTER TABLE `hall_location` ADD FOREIGN KEY (`hall_id`) REFERENCES `hall` (`id`);
 
 ALTER TABLE `hall_seat_layout` ADD FOREIGN KEY (`hall_id`) REFERENCES `hall` (`id`);
+
+ALTER TABLE `seat_type` ADD FOREIGN KEY (`hall_seat_layout_id`) REFERENCES `hall_seat_layout` (`id`);
 
 ALTER TABLE `hall_operation_time` ADD FOREIGN KEY (`hall_id`) REFERENCES `hall` (`id`);
 

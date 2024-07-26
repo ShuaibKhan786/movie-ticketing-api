@@ -76,7 +76,7 @@ type Profile struct {
 type Show struct {
 	Movie           Movie           `json:"movie"`
 	Cast            Cast            `json:"cast"`
-	MovieShowTiming MovieShowTiming `json:"movie_show_timing"`
+	MovieShowTiming []ShowDate `json:"movie_show_timing"`
 }
 
 type Movie struct {
@@ -101,12 +101,7 @@ type CastBlueprint struct {
 	Alias string `json:"alias"`
 }
 
-type MovieShowTiming struct {
-	ShowTiming []ShowTiming `json:"show_timing"`
-}
-
-type ShowTiming struct {
+type ShowDate struct {
 	Date  string `json:"show_date"`
-	Start string `json:"show_start"`
-	End   string `json:"show_end"`
+	Timing []string `json:"show_timing"`
 }

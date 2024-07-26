@@ -35,7 +35,7 @@ func ShowRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	hallId, err := IsHallRegistered(claims)
+	hallId, err := isHallRegistered(claims)
 	if err != nil {
 		utils.JSONResponse(&w, "hall not registered", http.StatusBadRequest)
 		return
@@ -70,7 +70,7 @@ func ShowRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func IsHallRegistered(claims security.Claims) (int64 , error) {
+func isHallRegistered(claims security.Claims) (int64 , error) {
 	var hallId int64
 	
 	redisCtx, redisCancel := context.WithTimeout(context.Background(), 500 * time.Millisecond) 
