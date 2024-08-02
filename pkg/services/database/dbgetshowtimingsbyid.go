@@ -3,19 +3,22 @@ package database
 import (
 	"context"
 	"fmt"
-
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
-func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]models.ShowDate, error) {
-	var showDates []models.ShowDate
+type DBShowDate struct {
+	Date string
+	Timing []string
+}
+
+func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowDate, error) {
+	var showDates []DBShowDate
 
 	const query = `
 		SELECT msd.id, msd.show_date, mst.show_timing
 		FROM movie_show_dates msd
 		INNER JOIN movie_show ms ON msd.movie_show_id = ms.id
 		INNER JOIN movie_show_timings mst ON mst.movie_show_dates_id = msd.id
-		WHERE ms.hall_id = ? AND ms.movie_id = ?;
+		WHERE ms.hall_id = ? AND ms.movie_id = ? AND mst.ticket_status = true;
 	`
 
 	rows, err := db.QueryContext(ctx, query, hallId, movieId)
@@ -24,7 +27,7 @@ func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]models.Sh
 	}
 	defer rows.Close()
 
-	dateMap := make(map[int64]*models.ShowDate)
+	dateMap := make(map[int64]*DBShowDate)
 	for rows.Next() {
 		var dateId int64 //this is just for using as a key in hmap
 		var showDate string
@@ -35,7 +38,7 @@ func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]models.Sh
 		}
 
 		if _, exists := dateMap[dateId]; !exists {
-			dateMap[dateId] = &models.ShowDate{
+			dateMap[dateId] = &DBShowDate{
 				Date:   showDate,
 				Timing: []string{},
 			}

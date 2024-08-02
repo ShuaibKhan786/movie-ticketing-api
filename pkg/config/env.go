@@ -20,6 +20,7 @@ type ENV struct {
 	DEFAULT_ORIGIN string
 	GOOGLE_USERINFO_URL string
 	REDIS_URL string
+	GRPC_IMAGE_UPLOAD_SERVER_HOST string
 }
 
 var (
@@ -29,7 +30,7 @@ var (
 
 func LoadConfig() bool {
 	// if err := godotenv.Load(); err != nil {
-	// 	fmt.Println(err)
+	// 	// fmt.Println(err)
 	// 	return false
 	// }
 	return loadEnv()
@@ -50,6 +51,7 @@ func loadEnv() bool {
 		Env.DEFAULT_ORIGIN = os.Getenv("DEFAULT_ORIGIN")
 		Env.GOOGLE_USERINFO_URL = os.Getenv("GOOGLE_USERINFO_URL")
 		Env.REDIS_URL = os.Getenv("REDIS_URL")
+		Env.GRPC_IMAGE_UPLOAD_SERVER_HOST = os.Getenv("GRPC_IMAGE_UPLOAD_SERVER_HOST")
 
 		if len(Env.JWTSECRETKEY) == 0 {
 			success = false

@@ -9,8 +9,8 @@ import (
 
 
 
-func GetConflictTimings(ctx context.Context, hallId int64, timings []models.ShowDate) ([]models.ShowDate, error) {
-	var showDates []models.ShowDate
+func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []models.ShowDate) ([]DBShowDate, error) {
+	var showDates []DBShowDate
 
 	const query = `
 		SELECT msd.id, msd.show_date, mst.show_timing
@@ -20,13 +20,13 @@ func GetConflictTimings(ctx context.Context, hallId int64, timings []models.Show
 		WHERE ms.hall_id = ? AND msd.show_date >= ?;
 	`
 
-	rows, err := db.QueryContext(ctx, query, hallId, timings[0].Date)
+	rows, err := db.QueryContext(ctx, query, hallId, providedTimings[0].Date)
 	if err != nil {
 		return nil, fmt.Errorf("error in query execution: %w", err)
 	}
 	defer rows.Close()
 
-	dateMap := make(map[int64]*models.ShowDate)
+	dateMap := make(map[int64]*DBShowDate)
 	for rows.Next() {
 		var dateId int64 
 		var showDate string
@@ -37,7 +37,7 @@ func GetConflictTimings(ctx context.Context, hallId int64, timings []models.Show
 		}
 
 		if _, exists := dateMap[dateId]; !exists {
-			dateMap[dateId] = &models.ShowDate{
+			dateMap[dateId] = &DBShowDate{
 				Date:   showDate,
 				Timing: []string{},
 			}
@@ -50,14 +50,14 @@ func GetConflictTimings(ctx context.Context, hallId int64, timings []models.Show
 	}
 
 
-    conflicts := checkForConflicts(showDates, timings)
+    conflicts := checkForConflicts(showDates, providedTimings)
 
     return conflicts, nil
 }
 
 
-func checkForConflicts(existing []models.ShowDate, provided []models.ShowDate) []models.ShowDate {
-    var conflicts []models.ShowDate
+func checkForConflicts(existing []DBShowDate, provided []models.ShowDate) []DBShowDate {
+    var conflicts []DBShowDate
 
     existingMap := make(map[string][]string)
     for _, showDate := range existing {
@@ -69,13 +69,13 @@ func checkForConflicts(existing []models.ShowDate, provided []models.ShowDate) [
             conflictingTimings := make([]string, 0)
             for _, pTiming := range pDate.Timing {
                 for _, eTiming := range eTimings {
-                    if pTiming == eTiming {
-                        conflictingTimings = append(conflictingTimings, pTiming)
+                    if pTiming.Time == eTiming {
+                        conflictingTimings = append(conflictingTimings, pTiming.Time)
                     }
                 }
             }
             if len(conflictingTimings) > 0 {
-                conflicts = append(conflicts, models.ShowDate{
+                conflicts = append(conflicts, DBShowDate{
                     Date:   pDate.Date,
                     Timing: conflictingTimings,
                 })

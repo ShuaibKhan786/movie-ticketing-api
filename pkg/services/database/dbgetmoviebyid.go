@@ -56,9 +56,21 @@ func GetMovieDetailsByID(ctx context.Context, movieId int64) (MovieDetails, erro
 func getMovieMetaData(ctx context.Context, tx *sql.Tx, movieId int64) (models.Movie, error) {
 	var movieMetaData models.Movie
 	const query = `
-		SELECT id, title, description, duration, genre, release_date
-		FROM movie
-		WHERE id = ?;
+		SELECT 
+			m.id,
+			m.title,
+			m.description,
+			m.duration,
+			m.genre,
+			m.release_date,
+			pup.url AS protrait_url,
+			pul.url AS landscape_url
+		FROM movie m
+		INNER JOIN
+			poster_urls pup ON pup.id = m.portrait_poster_url_id
+		INNER JOIN 
+			poster_urls pul ON pul.id = m.landscape_poster_url_id
+		WHERE m.id = ?;
 	`
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -73,6 +85,8 @@ func getMovieMetaData(ctx context.Context, tx *sql.Tx, movieId int64) (models.Mo
 		&movieMetaData.Duration,
 		&movieMetaData.Genre,
 		&movieMetaData.ReleaseDate,
+		&movieMetaData.PortraitUrl,
+		&movieMetaData.LandscapeUrl,
 	); err != nil {
 		return movieMetaData, fmt.Errorf("error in executing the query: %w",err)
 	}
@@ -114,23 +128,34 @@ func getMovieCastsByRole(ctx context.Context, tx *sql.Tx, movieId int64, role, t
 	switch role {
 	case "actor", "actress":
 		query = `
-			SELECT mc.alias, c.id, c.name
-			FROM %s as mc
-			INNER JOIN %s as c 
-			ON mc.%s = c.id
-			WHERE mc.movie_id = ?
+			SELECT 
+				mc.alias, 
+				c.id, 
+				c.name, 
+				pu.url
+			FROM %s c
+			LEFT JOIN poster_urls pu
+				ON pu.id = c.poster_url_id
+			INNER JOIN %s mc
+				ON mc.%s = c.id
+			WHERE mc.movie_id = ?;
 		`
 	default:
 		query = `
-			SELECT c.id, c.name
-			FROM %s as mc
-			INNER JOIN %s as c 
-			ON mc.%s = c.id
-			WHERE mc.movie_id = ?
+			SELECT 
+				c.id, 
+				c.name, 
+				pu.url
+			FROM %s c
+			LEFT JOIN poster_urls pu
+				ON pu.id = c.poster_url_id
+			INNER JOIN %s mc
+				ON mc.%s = c.id
+			WHERE mc.movie_id = ?;
 		`
 	}
 
-	processedQuery := fmt.Sprintf(query, table, role, column)
+	processedQuery := fmt.Sprintf(query, role, table, column)
 
 	stmt, err := tx.PrepareContext(ctx, processedQuery)
 	if err != nil {
@@ -152,6 +177,7 @@ func getMovieCastsByRole(ctx context.Context, tx *sql.Tx, movieId int64, role, t
 				&cast.Alias,
 				&cast.Id,
 				&cast.Name,
+				&cast.PosterUrl,
 			); err != nil {
 				return casts, fmt.Errorf("failed to scan the rows: %w", err)
 			}
@@ -159,6 +185,7 @@ func getMovieCastsByRole(ctx context.Context, tx *sql.Tx, movieId int64, role, t
 			if err := rows.Scan( 
 				&cast.Id,
 				&cast.Name,
+				&cast.PosterUrl,
 			); err != nil {
 				return casts, fmt.Errorf("error scanning cast rows for role %s: %w", role, err)
 			}

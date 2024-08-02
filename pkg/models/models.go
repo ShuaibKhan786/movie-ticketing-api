@@ -74,6 +74,7 @@ type Profile struct {
 
 
 type Show struct {
+	Status			string			`json:"status"`
 	Movie           Movie           `json:"movie"`
 	Cast            Cast            `json:"cast"`
 	MovieShowTiming []ShowDate `json:"movie_show_timing"`
@@ -86,6 +87,8 @@ type Movie struct {
 	Duration    int64  `json:"duration"`
 	Genre       string `json:"genre"`
 	ReleaseDate string `json:"release_date"`
+	PortraitUrl string `json:"portrait_url"`
+	LandscapeUrl string `json:"landscape_url"` 
 }
 
 type Cast struct {
@@ -99,9 +102,18 @@ type CastBlueprint struct {
 	Id   int64  `json:"id"`
 	Name string `json:"name"`
 	Alias string `json:"alias"`
+	PosterUrl *string `json:"poster"` 
+	// PosterUrl is a pointer because cast posters are optional; 
+	// using a pointer allows handling NULL values returned from the database.
 }
 
 type ShowDate struct {
 	Date  string `json:"show_date"`
-	Timing []string `json:"show_timing"`
+	Timing []Timing  `json:"show_timing"`                                                             
+}
+type Timing struct {
+	Time string `json:"time"`
+	TicketStatus bool `json:"ticket_status"` 
+	//if TicketStatus field is set to true
+	//it means ticket is avilable for booking of that timing
 }

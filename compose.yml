@@ -25,9 +25,37 @@ services:
       - GOOGLE_USERINFO_URL=${GOOGLE_USERINFO_URL}
       - OAUTH_STATE=${OAUTH_STATE}
       - DEFAULT_ORIGIN=${DEFAULT_ORIGIN}
+      - GRPC_IMAGE_UPLOAD_SERVER_HOST=${GRPC_IMAGE_UPLOAD_SERVER_HOST}
     deploy:
       restart_policy:
         condition: on-failure
+  
+  image-upload-grpc-server:
+    build:  
+      context: ./microservice/image-upload/.
+    container_name: image-upload-grpc-server
+    hostname: grpcimageserver
+    networks:
+      - movie-ticketing-network
+    ports:
+      - "${IMAGE_UPLOAD_GRPC_SERVER_PORT}:${IMAGE_UPLOAD_GRPC_SERVER_PORT}"
+    environment:
+      - PORT=${IMAGE_UPLOAD_GRPC_SERVER_PORT}
+    volumes:
+      - ./microservice/image-upload/images:/home/images
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  nginx-webserver:
+    image: nginx:1.27.0-alpine
+    container_name: nginx-image-webserver
+    ports:
+      - 8080:80
+    volumes:
+      - ./microservice/image-upload/images:/var/www/images
+      - ./nginx.conf:/etc/nginx/nginx.conf
+
 
   mysql-server:
     image: mysql:8.4.0

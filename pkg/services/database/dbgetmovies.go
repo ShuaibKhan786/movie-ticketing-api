@@ -9,18 +9,37 @@ import (
 
 func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset int) ([]models.Movie, error) {
 	const query = `
-		SELECT id, title, description, duration, genre, release_date
-		FROM movie m 
+		SELECT 
+			m.id,
+			m.title,
+			m.description,
+			m.duration,
+			m.genre,
+			m.release_date,
+			pup.url AS portrait_url,
+			pul.url AS landscape_url
+		FROM 
+			movie m
+		INNER JOIN 
+			poster_urls pup ON pup.id = m.portrait_poster_url_id
+		INNER JOIN 
+			poster_urls pul ON pul.id = m.landscape_poster_url_id
 		INNER JOIN (
-			SELECT ms.movie_id
-			FROM movie_show ms
-			INNER JOIN movie_show_dates mst
-			ON ms.id = mst.movie_show_id
-			WHERE ms.status = ? AND mst.show_date >= ?
-			GROUP BY ms.movie_id
-			ORDER BY MIN(mst.show_date) ASC
-			LIMIT ? OFFSET ?
-		) filtered_movies ON m.id = filtered_movies.movie_id;	
+			SELECT 
+				ms.movie_id
+			FROM 
+				movie_show ms
+			INNER JOIN 
+				movie_show_dates mst ON ms.id = mst.movie_show_id
+			WHERE 
+				ms.status = ? AND mst.show_date >= ?
+			GROUP BY 
+				ms.movie_id
+			ORDER BY 
+				MIN(mst.show_date) ASC
+			LIMIT 
+				? OFFSET ?
+		) filtered_movies ON m.id = filtered_movies.movie_id;
 	`
 
 	rows, err := db.QueryContext(ctx, query, status, date, limit, offset)
@@ -39,6 +58,8 @@ func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset i
 			&movie.Duration,
 			&movie.Genre,
 			&movie.ReleaseDate,
+			&movie.PortraitUrl,
+			&movie.LandscapeUrl,
 		); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}

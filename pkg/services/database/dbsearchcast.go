@@ -8,7 +8,7 @@ import (
 )
 
 
-
+//TODO: either send the whole details or only ID
 func SearchCastByName(ctx context.Context, role, name string) ([]models.CastBlueprint, error) {
 	const query = `SELECT id, name FROM %s WHERE name LIKE ?`
 	processedQuery := fmt.Sprintf(query, role)

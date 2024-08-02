@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package imageService;
+
+option go_package = "./pb";
+
+service ImageService {
+	rpc UploadImage(stream UploadImageRequest) returns (UploadImageResponse) {}
+}
+
+message ImageMetaData {
+	string ImageFormat = 1;
+	uint32 ImageWidth = 2;
+	uint32 ImageHeight = 3;
+}
+
+message UploadImageRequest {
+	oneof payload {
+		ImageMetaData MetaData = 1;
+		bytes Image = 2;
+	}
+}
+
+message UploadImageResponse {
+	string Url = 1;
+}

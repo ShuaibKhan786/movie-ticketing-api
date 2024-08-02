@@ -32,7 +32,7 @@ func RegisterShow(ctx context.Context, show models.Show, hallId int64) error {
 	}
 	fmt.Println(tempMovieId)
 
-	tempShowId, err := registerActualShow(ctx, tx, tempMovieId, hallId)
+	tempShowId, err := registerActualShow(ctx, tx, tempMovieId, hallId, show.Status)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -57,9 +57,19 @@ func registerMovie(ctx context.Context, tx *sql.Tx, movie models.Movie) (int64, 
 	var movieId int64
 
 	if movie.Id == 0 {
+		portraitUrlId, err := registerPosterUrl(ctx, tx, movie.PortraitUrl)
+		if err != nil {
+			return movieId, fmt.Errorf("register movie: %w", err)
+		}
+
+		landscapeUrlId, err := registerPosterUrl(ctx, tx, movie.LandscapeUrl)
+		if err != nil {
+			return movieId, fmt.Errorf("register movie: %w", err)
+		}
+
 		const query = `INSERT INTO movie 
-						(title, description, duration, genre, release_date)
-						VALUES (?, ?, ?, ?, ?);`
+						(title, description, duration, genre, release_date, portrait_poster_url_id, landscape_poster_url_id)
+						VALUES (?, ?, ?, ?, ?, ?, ?);`
 
 		stmt, err := tx.PrepareContext(ctx, query)
 		if err != nil {
@@ -72,7 +82,10 @@ func registerMovie(ctx context.Context, tx *sql.Tx, movie models.Movie) (int64, 
 			movie.Description,
 			movie.Duration,
 			movie.Genre,
-			movie.ReleaseDate)
+			movie.ReleaseDate,
+			portraitUrlId,
+			landscapeUrlId,
+		)
 		if err != nil {
 			return movieId, fmt.Errorf("execution: %w", err)
 		}
@@ -88,8 +101,8 @@ func registerMovie(ctx context.Context, tx *sql.Tx, movie models.Movie) (int64, 
 	return movieId, nil
 }
 
-func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64) (int64, error) {
-	const query = `INSERT INTO movie_show (movie_id, hall_id) VALUES (?, ?)`
+func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64, status string) (int64, error) {
+	const query = `INSERT INTO movie_show (movie_id, hall_id, status) VALUES (?, ?, ?)`
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -97,7 +110,7 @@ func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64) 
 	}
 	defer stmt.Close()
 
-	res, err := stmt.ExecContext(ctx, movieId, hallId)
+	res, err := stmt.ExecContext(ctx, movieId, hallId, status)
 	if err != nil {
 		return 0, fmt.Errorf("execution: %w", err)
 	}
@@ -111,8 +124,16 @@ func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64) 
 }
 
 func registerShowTimings(ctx context.Context, tx *sql.Tx, dates []models.ShowDate, showId int64) error {
-	const dateQuery = `INSERT INTO movie_show_dates (show_date, movie_show_id) VALUES (?, ?);`
-	const timingQuery = `INSERT INTO movie_show_timings (show_timing, movie_show_dates_id) VALUES (?, ?);`
+	const dateQuery = `
+		INSERT INTO movie_show_dates 
+		(show_date, movie_show_id) 
+		VALUES (?, ?);
+	`
+	const timingQuery = `
+		INSERT INTO movie_show_timings 
+		(show_timing, ticket_status, movie_show_dates_id) 
+		VALUES (?, ?, ?);
+	`
 
 	stmtDate, err := tx.PrepareContext(ctx, dateQuery)
 	if err != nil {
@@ -141,10 +162,13 @@ func registerShowTimings(ctx context.Context, tx *sql.Tx, dates []models.ShowDat
 
 		for _, timing := range date.Timing {
 			if _, err := stmtTiming.ExecContext(ctx, 
-				timing,
+				timing.Time,
+				timing.TicketStatus,
 				datesId); err != nil {
 				return fmt.Errorf("execution: %w", err)
 			}
+			//TODO: create a room and register a placeholder for hall seat, 
+			//		ADMIN_ID:HALL_ID:SHOW_ID:SHOW_DATE:SHOW_TIME
 		}
 	}
 
@@ -242,7 +266,16 @@ func updateCastIdInCastList(ctx context.Context, tx *sql.Tx, movieId, castId int
 func registerNewCast(ctx context.Context, tx *sql.Tx, cast models.CastBlueprint, role string) (int64, error) {
 	var castId int64
 
-	query := fmt.Sprintf(`INSERT INTO %s (name) VALUES (?);`, role)
+	var posterUrlId sql.NullInt64
+	var err error
+	if *cast.PosterUrl != "" {
+		posterUrlId.Int64, err = registerPosterUrl(ctx, tx, *cast.PosterUrl)
+		if err != nil {
+			return castId, fmt.Errorf("register %s: %w", role, err)
+		}
+	}
+
+	query := fmt.Sprintf(`INSERT INTO %s (name, poster_url_id) VALUES (?, ?);`, role)
 
 	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
@@ -250,7 +283,7 @@ func registerNewCast(ctx context.Context, tx *sql.Tx, cast models.CastBlueprint,
 	}
 	defer stmt.Close()
 
-	res, err := stmt.ExecContext(ctx, cast.Name)
+	res, err := stmt.ExecContext(ctx, cast.Name, posterUrlId)
 	if err != nil {
 		return 0, fmt.Errorf("execution: %w", err)
 	} 
@@ -261,4 +294,28 @@ func registerNewCast(ctx context.Context, tx *sql.Tx, cast models.CastBlueprint,
 	}
 
 	return castId, nil
+}
+
+func registerPosterUrl(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
+	var posterId int64
+
+	const query = `INSERT INTO poster_urls (url) VALUES (?)`
+
+	stmt, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		return posterId, fmt.Errorf("preparing poster_urls table query: %w", err)
+	}
+	defer stmt.Close()
+
+	res, err := stmt.ExecContext(ctx, url)
+	if err != nil {
+		return posterId, fmt.Errorf("executing poster_urls table query: %w", err)
+	}
+
+	posterId, err = res.LastInsertId()
+	if err != nil {
+		return posterId, fmt.Errorf("last inserted id poster_urls table query: %w", err)
+	}
+
+	return posterId, nil
 }
