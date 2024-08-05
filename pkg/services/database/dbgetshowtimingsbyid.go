@@ -5,16 +5,22 @@ import (
 	"fmt"
 )
 
-type DBShowDate struct {
-	Date string
-	Timing []string
+type DBTiming struct {
+	Id     int64    `json:"timing_id"`
+	Timing string `json:"timing"`
 }
 
-func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowDate, error) {
-	var showDates []DBShowDate
+type DBShowTimings struct {
+	Id      int64      `json:"date_id"`
+	Date    string     `json:"date"`
+	Timings []DBTiming `json:"timings"`
+}
+
+func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowTimings, error) {
+	var showTimings []DBShowTimings
 
 	const query = `
-		SELECT msd.id, msd.show_date, mst.show_timing
+		SELECT msd.id, msd.show_date, mst.id, mst.show_timing
 		FROM movie_show_dates msd
 		INNER JOIN movie_show ms ON msd.movie_show_id = ms.id
 		INNER JOIN movie_show_timings mst ON mst.movie_show_dates_id = msd.id
@@ -27,28 +33,29 @@ func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowDat
 	}
 	defer rows.Close()
 
-	dateMap := make(map[int64]*DBShowDate)
+	dateMap := make(map[int64]*DBShowTimings)
 	for rows.Next() {
-		var dateId int64 //this is just for using as a key in hmap
+		var dateId int64
 		var showDate string
-		var showTiming string
+		var showTiming DBTiming
 
-		if err := rows.Scan(&dateId, &showDate, &showTiming); err != nil {
+		if err := rows.Scan(&dateId, &showDate, &showTiming.Id, &showTiming.Timing); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 
 		if _, exists := dateMap[dateId]; !exists {
-			dateMap[dateId] = &DBShowDate{
-				Date:   showDate,
-				Timing: []string{},
+			dateMap[dateId] = &DBShowTimings{
+				Id:      dateId,
+				Date:    showDate,
+				Timings: []DBTiming{},
 			}
 		}
-		dateMap[dateId].Timing = append(dateMap[dateId].Timing, showTiming)
+		dateMap[dateId].Timings = append(dateMap[dateId].Timings, showTiming)
 	}
 
 	for _, showDate := range dateMap {
-		showDates = append(showDates, *showDate)
+		showTimings = append(showTimings, *showDate)
 	}
 
-	return showDates, nil
+	return showTimings, nil
 }

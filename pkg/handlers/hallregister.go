@@ -9,7 +9,7 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
-	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/security"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
@@ -44,6 +44,12 @@ func HallRegister(w http.ResponseWriter, r *http.Request) {
 	//making sure the credeentials of hall is validate
 	if err := utils.ValidateHall(&hallMetadata); err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err = isHallRegistered(claims) 
+	if err == nil {
+		utils.JSONResponse(&w, "hall already registered", http.StatusBadRequest)
 		return
 	}
 

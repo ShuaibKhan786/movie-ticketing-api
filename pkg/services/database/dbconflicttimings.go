@@ -7,7 +7,10 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
-
+type DBShowDate struct {
+	Date   string   `json:"date"`
+	Timing []string `json:"timings"`
+}
 
 func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []models.ShowDate) ([]DBShowDate, error) {
 	var showDates []DBShowDate
@@ -28,7 +31,7 @@ func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []mod
 
 	dateMap := make(map[int64]*DBShowDate)
 	for rows.Next() {
-		var dateId int64 
+		var dateId int64
 		var showDate string
 		var showTiming string
 
@@ -49,39 +52,37 @@ func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []mod
 		showDates = append(showDates, *showDate)
 	}
 
+	conflicts := checkForConflicts(showDates, providedTimings)
 
-    conflicts := checkForConflicts(showDates, providedTimings)
-
-    return conflicts, nil
+	return conflicts, nil
 }
 
-
 func checkForConflicts(existing []DBShowDate, provided []models.ShowDate) []DBShowDate {
-    var conflicts []DBShowDate
+	var conflicts []DBShowDate
 
-    existingMap := make(map[string][]string)
-    for _, showDate := range existing {
-        existingMap[showDate.Date] = showDate.Timing
-    }
+	existingMap := make(map[string][]string)
+	for _, showDate := range existing {
+		existingMap[showDate.Date] = showDate.Timing
+	}
 
-    for _, pDate := range provided {
-        if eTimings, exists := existingMap[pDate.Date]; exists {
-            conflictingTimings := make([]string, 0)
-            for _, pTiming := range pDate.Timing {
-                for _, eTiming := range eTimings {
-                    if pTiming.Time == eTiming {
-                        conflictingTimings = append(conflictingTimings, pTiming.Time)
-                    }
-                }
-            }
-            if len(conflictingTimings) > 0 {
-                conflicts = append(conflicts, DBShowDate{
-                    Date:   pDate.Date,
-                    Timing: conflictingTimings,
-                })
-            }
-        }
-    }
+	for _, pDate := range provided {
+		if eTimings, exists := existingMap[pDate.Date]; exists {
+			conflictingTimings := make([]string, 0)
+			for _, pTiming := range pDate.Timing {
+				for _, eTiming := range eTimings {
+					if pTiming.Time == eTiming {
+						conflictingTimings = append(conflictingTimings, pTiming.Time)
+					}
+				}
+			}
+			if len(conflictingTimings) > 0 {
+				conflicts = append(conflicts, DBShowDate{
+					Date:   pDate.Date,
+					Timing: conflictingTimings,
+				})
+			}
+		}
+	}
 
-    return conflicts
+	return conflicts
 }

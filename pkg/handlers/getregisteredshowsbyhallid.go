@@ -11,7 +11,6 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
-//TODO: update more details
 func GetRegisteredShowsByHallID(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value(config.ClaimsContextKey).(security.Claims)
 	if !ok {

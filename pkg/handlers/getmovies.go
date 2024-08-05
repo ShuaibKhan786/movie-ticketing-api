@@ -22,6 +22,7 @@ type MoviesQuery struct{
 	Offset int
 }
 
+//url schema: http://localhost:3090/api/v1/movies?status=upcoming&page=1&size=3 
 func GetMovies(w http.ResponseWriter, r *http.Request) {
 	moviesQuery, err := getMoviesQueryFromQuery(r)	
 	if err != nil {

@@ -46,17 +46,12 @@ func RegisterHall(ctx context.Context, hall models.Hall, adminId int64, hallId *
 		return err
 	}
 
-	if err := registeredSeatlayout(ctx, tx, hall.SeatLayout, tempHallId); err != nil {
-		tx.Rollback()
-		return err
-	}
-
 	if err := registerOperation(ctx, tx, hall.OperationTime, tempHallId); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	if err := updateAdminHallRegisteredColumnToTrue(ctx, tx, adminId); err != nil {
+	if err := updateAdminHallXColumnToTrue(ctx, tx, adminId, "hall_registered"); err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -113,32 +108,6 @@ func registerLocation(ctx context.Context, tx *sql.Tx, location models.Location,
 	return nil
 }
 
-
-
-func registeredSeatlayout(ctx context.Context, tx *sql.Tx, seatlayout models.SeatLayout, hallId int64) error {
-	stmt, err := tx.PrepareContext(ctx,`INSERT INTO hall_seat_layout (max_capacity, h_rows, h_columns, types, layout, hall_id) VALUES (?, ?, ?, ?, ?, ?);`)
-	if err != nil {
-		return fmt.Errorf("prepare context : %w",err)
-
-	}
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx,
-		seatlayout.MaxCapacity,
-		seatlayout.Rows,
-		seatlayout.Columns,
-		seatlayout.Types, 
-	 	seatlayout.Layout, 
-		hallId)
-	if err != nil { 
-		return fmt.Errorf("query execution : %w",err)
-	}
-
-	return nil
-}
-
-
-
 func registerOperation(ctx context.Context, tx *sql.Tx, operation models.OperationTime, hallId int64) error {
 	stmt, err := tx.PrepareContext(ctx,`INSERT INTO hall_operation_time (open_time, closed_time, hall_id) VALUES (?, ?, ?);`)
 	if err != nil {
@@ -157,8 +126,9 @@ func registerOperation(ctx context.Context, tx *sql.Tx, operation models.Operati
 	return nil
 }
 
-func updateAdminHallRegisteredColumnToTrue(ctx context.Context, tx *sql.Tx, adminId int64) error {
-	stmt, err := tx.PrepareContext(ctx, `UPDATE admin SET hall_registered=true WHERE id=?`)
+func updateAdminHallXColumnToTrue(ctx context.Context, tx *sql.Tx, adminId int64, column string) error {
+	query := fmt.Sprintf(`UPDATE admin SET %s=true WHERE id=?`, column)
+	stmt, err := tx.PrepareContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("prepare context : %w",err)
 	}

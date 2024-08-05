@@ -52,10 +52,6 @@ func ValidateHall(hall *models.Hall) error {
 		return err
 	}
 
-	if err := ValidateSeatLayout(&hall.SeatLayout); err != nil {
-		return err
-	}
-
 	if err := ValidateOperationTime(&hall.OperationTime); err != nil {
 		return err
 	}
@@ -83,25 +79,6 @@ func ValidateLocation(location *models.Location) error {
 	return nil
 }
 
-func ValidateSeatLayout(seatLayout *models.SeatLayout) error {
-	if seatLayout.MaxCapacity <= 0 {
-		return errors.New("max capacity must be greater than zero")
-	}
-
-	if seatLayout.Rows <= 0 {
-		return errors.New("rows must be greater than zero")
-	}
-
-	if seatLayout.Columns <= 0 {
-		return errors.New("columns must be greater than zero")
-	}
-
-	if strings.TrimSpace(seatLayout.Layout) == "" {
-		return errors.New("layout is required")
-	}
-
-	return nil
-}
 
 func ValidateOperationTime(operationTime *models.OperationTime) error {
 	if !isValidTime(operationTime.OpenTime) {

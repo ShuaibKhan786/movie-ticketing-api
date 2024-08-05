@@ -2,21 +2,22 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
 )
 
-//url schema: http://localhost:3090/api/v1/hall/{id}/showtimes?movieId=2
-// here id is the id of the hall
-// TODO: log the errors to a log file
-
+//url schema: http://localhost:3090/api/v1/hall/{hall_id}/showtimes?movie_id=2
 func GetShowTimingsByHallID(w http.ResponseWriter, r *http.Request) {
-	hallId , movieId, err := parseHallIDAndMovieID(r)
+	hallId , err := getPathParameterValueInt64(r, "hall_id")
+	if err != nil {
+		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	movieId, err := getQueryValueInt64(r, "movie_id")
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
 		return
@@ -27,7 +28,7 @@ func GetShowTimingsByHallID(w http.ResponseWriter, r *http.Request) {
 
 	showTimings, err := database.GetShowTimingsByID(ctx, hallId, movieId)
 	if err != nil {
-		utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError) 
+		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError) 
 		return
 	}
 
@@ -40,26 +41,4 @@ func GetShowTimingsByHallID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonShowTimings)
-}
-
-func parseHallIDAndMovieID(r *http.Request) (int64, int64, error) {
-	var hallId, movieId int64
-	tempHallId, err := getIDFromPathParameter(r)
-	if err != nil {
-		return hallId, movieId, err
-	}
-
-	hallId = tempHallId
-
-	strMovieId := r.URL.Query().Get("movieId")
-	if strMovieId == "" {
-		return hallId, movieId, errors.New("missing or empty 'movieId' query parameter")
-	}
-
-	movieId, err = strconv.ParseInt(strMovieId, 10, 64)
-	if err != nil {
-		return hallId, movieId, errors.New("invalid movie id")
-	}
-
-	return hallId, movieId, nil
 }

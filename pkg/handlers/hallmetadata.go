@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/database"
@@ -19,21 +18,22 @@ func HallMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	adminId := claims.Id
-	parentCtx := context.TODO()
-	childCtx, cancel := context.WithCancel(parentCtx)
+	hallId, err := isHallRegistered(claims)
+	if err != nil {
+		utils.JSONResponse(&w, "hall not registered", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	//all the hall metadata will be retrive that has a relationship with that admin
-	hallMetaData, err := database.GetHallMetadata(childCtx, adminId)
+	hallMetaData, err := database.GetHallMetadata(ctx, hallId)
 	if err != nil {
-		if strings.Contains(err.Error(),"no rows in result set") {
-			utils.JSONResponse(&w, "no hall data found with that admin", http.StatusBadRequest)
-			return
-		}
 		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 
 	//encode hallMetaData struct to json data
 	jsonHallMetaData, err := utils.EncodeJson(&hallMetaData) 

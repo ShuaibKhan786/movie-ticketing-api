@@ -9,6 +9,7 @@ CREATE TABLE admin (
     email VARCHAR(255) UNIQUE NOT NULL,
     email_verified BOOLEAN,
     hall_registered BOOLEAN,
+    hall_seat_layout_registered BOOLEAN,
     profile_id INT UNIQUE,
     FOREIGN KEY (profile_id) REFERENCES profile(id)
 );
@@ -43,25 +44,29 @@ CREATE TABLE hall_location (
 );
 
 CREATE TABLE hall_seat_layout (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    max_capacity INT NOT NULL,
-    h_rows INT NOT NULL,
-    h_columns INT NOT NULL,
-    types VARCHAR(255),
-    layout TEXT NOT NULL,
-    hall_id INT,
-    FOREIGN KEY (hall_id) REFERENCES hall(id)
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  hall_id INT NOT NULL
 );
 
 CREATE TABLE seat_type (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    start INT,
-    end INT,
-    price INT,
-    hall_seat_layout_id INT,
-    FOREIGN KEY (hall_seat_layout_id) REFERENCES hall_seat_layout(id)
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price INT NOT NULL,
+  seat_row INT NOT NULL,
+  seat_col INT NOT NULL,
+  seat_matrix VARCHAR(255) NOT NULL,
+  order_from_screen INT NOT NULL,
+  hall_seat_layout_id INT NOT NULL,
+  FOREIGN KEY (hall_seat_layout_id) REFERENCES hall_seat_layout(id)
 );
+
+CREATE TABLE seat_type_row_name (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  row_name VARCHAR(255) NOT NULL,
+  seat_type_id INT NOT NULL,
+  FOREIGN KEY (seat_type_id) REFERENCES seat_type(id)
+);
+
 
 CREATE TABLE hall_operation_time (
     id INT AUTO_INCREMENT PRIMARY KEY,

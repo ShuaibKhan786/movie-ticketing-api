@@ -14,9 +14,8 @@ import (
 //url schema: http://localhost:3090/api/v1/movie/{id}
 // using the id which is a movie id 
 // will send all the movie details
-
 func GetMovieByID(w http.ResponseWriter, r *http.Request) {
-	movieId, err := getIDFromPathParameter(r)
+	movieId, err := getPathParameterValueInt64(r, "id")
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
 		return
@@ -41,16 +40,19 @@ func GetMovieByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonMovieDetails)
 }
 
-func getIDFromPathParameter(r *http.Request) (int64, error) {
-	movieIDStr := r.PathValue("id")
-	if movieIDStr == "" {
-		return 0, errors.New("missing id from path parameter")
+func getPathParameterValueInt64(r *http.Request, key string) (int64, error) {
+	var int64ID int64
+
+	stringID := r.PathValue(key)
+	if stringID == "" {
+		return int64ID, errors.New("no path parameter value")
 	}
 
-	movieID, err := strconv.ParseInt(movieIDStr, 10, 64)
+	var err error
+	int64ID, err = strconv.ParseInt(stringID, 10, 64)
 	if err != nil {
-		return 0, errors.New("invalid id")
+		return 0, errors.New("invalid path parameter value")
 	}
 
-	return movieID, nil
+	return int64ID, nil
 }

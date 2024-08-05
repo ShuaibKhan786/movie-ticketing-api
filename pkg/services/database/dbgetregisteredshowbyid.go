@@ -6,18 +6,23 @@ import (
 )
 
 type ShowDetails struct {
-	Id int64 `json:"id"`
-	Title string `json:"title"`
-	ReleaseDate string `json:"release_date"`
+    ShowID     int64  `json:"show_id"`
+    MovieID    int64  `json:"movie_id"`
+    Status     string `json:"status"`
+    MovieTitle string `json:"movie_title"`
 }
 
 func GetRegisteredShowsByID(ctx context.Context, hallId int64) ([]ShowDetails, error) {
 	const query = `
-		SELECT m.id, m.title, m.release_date
-		FROM movie m
-		INNER JOIN movie_show ms
+		SELECT 
+			ms.id, 
+			ms.movie_id, 
+			ms.status, 
+			m.title
+		FROM movie_show ms
+		INNER JOIN movie m
 		ON m.id = ms.movie_id
-		WHERE ms.hall_id = ?;
+		WHERE hall_id = ?;
 	`
 
 	var shows []ShowDetails
@@ -38,9 +43,10 @@ func GetRegisteredShowsByID(ctx context.Context, hallId int64) ([]ShowDetails, e
 		var show ShowDetails
 
 		if err := rows.Scan(
-			&show.Id,
-			&show.Title,
-			&show.ReleaseDate); err != nil {
+			&show.ShowID,
+			&show.MovieID,
+			&show.Status,
+			&show.MovieTitle); err != nil {
 				return shows, fmt.Errorf("error in scanning the row by hall id %d: %w", hallId, err)
 			}
 		

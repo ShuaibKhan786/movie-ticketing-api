@@ -8,8 +8,13 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
-func GetHallMetadata(ctx context.Context,adminId int64) (models.Hall, error) {
-	var hallMetaData models.Hall
+type HallMetaData struct{
+	Id	int64 `json:"id"`
+	models.Hall
+}
+
+func GetHallMetadata(ctx context.Context,hallId int64) (HallMetaData, error) {
+	var hallMetaData HallMetaData
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return hallMetaData, fmt.Errorf("begin transaction : %w",err)
@@ -26,7 +31,7 @@ func GetHallMetadata(ctx context.Context,adminId int64) (models.Hall, error) {
 		}
 	}()
 
-	actualHallData, hallId, err := getActualHallData(ctx, tx, adminId)
+	actualHallData, err := getActualHallData(ctx, tx, hallId)
 	if err != nil {
 		tx.Rollback()
 		return hallMetaData, err
@@ -38,49 +43,42 @@ func GetHallMetadata(ctx context.Context,adminId int64) (models.Hall, error) {
 		return hallMetaData, err
 	}
 
-	seatlayout, err := getHallSeatlayoutData(ctx, tx, hallId)
-	if err != nil {
-		tx.Rollback()
-		return hallMetaData, err
-	}
-
 	operationTime, err := getHallOperationTimeData(ctx, tx, hallId)
 	if err != nil {
 		tx.Rollback()
 		return hallMetaData, err
 	}
 
+	hallMetaData.Id = hallId
 	hallMetaData.Name = actualHallData.Name
 	hallMetaData.Manager = actualHallData.Manager
 	hallMetaData.Contact = actualHallData.Contact
 	hallMetaData.Location = location
-	hallMetaData.SeatLayout = seatlayout
 	hallMetaData.OperationTime = operationTime
 
 	return hallMetaData, nil
 }
 
 
-func getActualHallData(ctx context.Context, tx *sql.Tx, adminId int64) (models.ActualHall, int64, error) {
+func getActualHallData(ctx context.Context, tx *sql.Tx, adminId int64) (models.ActualHall, error) {
 	var actualHall models.ActualHall
-	var hallId int64
 
-	stmt, err := tx.PrepareContext(ctx, `SELECT id, hall_name, hall_manager, hall_contact, admin_id FROM hall WHERE admin_id=?`)
+	stmt, err := tx.PrepareContext(ctx, `SELECT hall_name, hall_manager, hall_contact, admin_id FROM hall WHERE id=?`)
 	if err != nil {
-		return actualHall, hallId, fmt.Errorf("prepare context : %w", err)
+		return actualHall, fmt.Errorf("prepare context : %w", err)
 	}
 	defer stmt.Close()
 
 	row := stmt.QueryRowContext(ctx, adminId)
-	if err := row.Scan(&hallId, 
+	if err := row.Scan( 
 		&actualHall.Name, 
 		&actualHall.Manager, 
 		&actualHall.Contact, 
 		&actualHall.AdminId); err != nil {
-		return actualHall, hallId, fmt.Errorf("query row exec : %w", err)
+		return actualHall, fmt.Errorf("query row exec : %w", err)
 	}
 
-	return actualHall, hallId, nil
+	return actualHall, nil
 }
 
 
@@ -106,41 +104,21 @@ func getHallLocationData(ctx context.Context, tx *sql.Tx, hallId int64) (models.
 	return location, nil
 }
 
-func getHallSeatlayoutData(ctx context.Context, tx *sql.Tx, hallId int64) (models.SeatLayout, error) {
-	var seatlayout models.SeatLayout
-
-	stmt, err := tx.PrepareContext(ctx, `SELECT max_capacity, h_rows, h_columns, types, layout FROM hall_seat_layout WHERE hall_id=?`)
-	if err != nil {
-		return seatlayout, fmt.Errorf("prepare context : %w", err)
-	}
-	defer stmt.Close()
-
-	row := stmt.QueryRowContext(ctx, hallId)
-	if err := row.Scan(&seatlayout.MaxCapacity,
-		&seatlayout.Rows,
-		&seatlayout.Columns,
-		&seatlayout.Types,
-		&seatlayout.Layout); err != nil {
-		return seatlayout, fmt.Errorf("query row exec : %w", err)
-	}
-
-	return seatlayout, nil
-}
 
 func getHallOperationTimeData(ctx context.Context, tx *sql.Tx, hallId int64) (models.OperationTime, error) {
 	var operation models.OperationTime
-
+	
 	stmt, err := tx.PrepareContext(ctx, `SELECT open_time, closed_time FROM hall_operation_time WHERE hall_id=?`)
 	if err != nil {
 		return operation, fmt.Errorf("prepare context : %w", err)
 	}
 	defer stmt.Close()
-
+	
 	row := stmt.QueryRowContext(ctx, hallId)
 	if err := row.Scan(&operation.OpenTime,
 		&operation.CloseTime); err != nil {
-		return operation, fmt.Errorf("query row exec : %w", err)
-	}
-
-	return operation, nil
+			return operation, fmt.Errorf("query row exec : %w", err)
+		}
+		
+		return operation, nil	
 }

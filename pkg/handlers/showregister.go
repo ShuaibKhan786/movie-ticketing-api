@@ -41,6 +41,12 @@ func ShowRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = isSeatLayoutRegistered(claims) 
+	if err != nil {
+		utils.JSONResponse(&w, "hall seatlayout not registered", http.StatusBadRequest)
+		return
+	}
+
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		utils.JSONResponse(&w, "failed to read the body", http.StatusInternalServerError)
@@ -104,4 +110,24 @@ func isHallRegistered(claims security.Claims) (int64 , error) {
 		return hallId, fmt.Errorf("conversion error : %w",err)
 	}
 	return hallId, nil
+}
+
+func isSeatLayoutRegistered(claims security.Claims)  error {
+	redisCtx, redisCancel := context.WithTimeout(context.Background(), 500 * time.Millisecond) 
+	defer redisCancel()
+	
+	redisKey := fmt.Sprintf("hall:seatlayout:registered:%s:%d", claims.Role, claims.Id)
+
+	redisValue, err := redisdb.Get(redisCtx, redisKey)
+	if err != nil {
+		return fmt.Errorf("redis error : %w", err)
+	}
+	if redisValue == "" {
+		err = database.IsSeatLayoutRegistered(claims.Id);
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
 }
