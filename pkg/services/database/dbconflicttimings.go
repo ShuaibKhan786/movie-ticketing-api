@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
 type DBShowDate struct {
@@ -12,7 +11,7 @@ type DBShowDate struct {
 	Timing []string `json:"timings"`
 }
 
-func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []models.ShowDate) ([]DBShowDate, error) {
+func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []DBShowDate) ([]DBShowDate, error) {
 	var showDates []DBShowDate
 
 	const query = `
@@ -57,7 +56,7 @@ func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []mod
 	return conflicts, nil
 }
 
-func checkForConflicts(existing []DBShowDate, provided []models.ShowDate) []DBShowDate {
+func checkForConflicts(existing []DBShowDate, provided []DBShowDate) []DBShowDate {
 	var conflicts []DBShowDate
 
 	existingMap := make(map[string][]string)
@@ -70,8 +69,8 @@ func checkForConflicts(existing []DBShowDate, provided []models.ShowDate) []DBSh
 			conflictingTimings := make([]string, 0)
 			for _, pTiming := range pDate.Timing {
 				for _, eTiming := range eTimings {
-					if pTiming.Time == eTiming {
-						conflictingTimings = append(conflictingTimings, pTiming.Time)
+					if pTiming == eTiming {
+						conflictingTimings = append(conflictingTimings, pTiming)
 					}
 				}
 			}

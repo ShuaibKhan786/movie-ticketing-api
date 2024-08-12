@@ -103,4 +103,6 @@ type Timing struct {
 	TicketStatus bool   `json:"ticket_status"`
 	//if TicketStatus field is set to true
 	//it means ticket is avilable for booking of that timing
+	PreExpiry  int `json:"pre_expiry_secs"`
+	PostExpiry int `json:"post_expiry_secs"`
 }

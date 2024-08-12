@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
-	"crypto/rand"
+	"fmt"
+	"time"
 )
 
 func IsValidJson(body []byte) bool{
@@ -33,4 +35,25 @@ func GenerateRandomToken(size int) (string, error) {
     }
 
     return base64.StdEncoding.EncodeToString(token), nil
+}
+
+func ConvertToSeconds(date, timing string) (int64, error) {
+	sqlLayout := "2006-01-02 15:04:05"
+	dateTime := fmt.Sprintf("%s %s", date, timing)
+
+	targetTime, err := time.Parse(sqlLayout, dateTime)
+	if err != nil {
+		return 0, err
+	}
+
+	currentTime := time.Now()
+
+	// Calculate TTL in seconds
+	ttl := targetTime.Sub(currentTime).Seconds()
+
+	if ttl < 0 {
+		return 0, fmt.Errorf("the target time is in the past")
+	}
+
+	return int64(ttl), nil
 }

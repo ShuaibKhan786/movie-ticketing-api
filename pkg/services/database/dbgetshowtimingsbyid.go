@@ -5,15 +5,15 @@ import (
 	"fmt"
 )
 
-type DBTiming struct {
-	Id     int64    `json:"timing_id"`
+type DBTimingID struct {
+	Id     int64  `json:"timing_id"`
 	Timing string `json:"timing"`
 }
 
 type DBShowTimings struct {
-	Id      int64      `json:"date_id"`
-	Date    string     `json:"date"`
-	Timings []DBTiming `json:"timings"`
+	Id      int64        `json:"date_id"`
+	Date    string       `json:"show_date"`
+	Timings []DBTimingID `json:"timings"`
 }
 
 func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowTimings, error) {
@@ -37,7 +37,7 @@ func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowTim
 	for rows.Next() {
 		var dateId int64
 		var showDate string
-		var showTiming DBTiming
+		var showTiming DBTimingID
 
 		if err := rows.Scan(&dateId, &showDate, &showTiming.Id, &showTiming.Timing); err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
@@ -47,7 +47,7 @@ func GetShowTimingsByID(ctx context.Context, hallId, movieId int64) ([]DBShowTim
 			dateMap[dateId] = &DBShowTimings{
 				Id:      dateId,
 				Date:    showDate,
-				Timings: []DBTiming{},
+				Timings: []DBTimingID{},
 			}
 		}
 		dateMap[dateId].Timings = append(dateMap[dateId].Timings, showTiming)

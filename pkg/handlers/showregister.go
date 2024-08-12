@@ -67,6 +67,7 @@ func ShowRegister(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
 	defer cancel()
 
+	//database regs here
 	if err := database.RegisterShow(ctx, show, hallId); err!= nil {
 		utils.JSONResponse(&w, "failed to registered the show in database "+err.Error(), http.StatusInternalServerError)
 		return

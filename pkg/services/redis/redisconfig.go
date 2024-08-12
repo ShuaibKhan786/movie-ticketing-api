@@ -9,11 +9,10 @@ import (
 	redis "github.com/redis/go-redis/v9"
 )
 
-
 var (
-	rdb *redis.Client
+	rdb  *redis.Client
 	once sync.Once
-	err error
+	err  error
 )
 
 func InitRedis() error {
@@ -26,7 +25,7 @@ func InitRedis() error {
 
 		rdb = redis.NewClient(opts)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		if _, errPing := rdb.Ping(ctx).Result(); errPing != nil {

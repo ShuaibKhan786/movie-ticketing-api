@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
+	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
 func RegisterShow(ctx context.Context, show models.Show, hallId int64) error {
@@ -131,8 +133,8 @@ func registerShowTimings(ctx context.Context, tx *sql.Tx, dates []models.ShowDat
 	`
 	const timingQuery = `
 		INSERT INTO movie_show_timings 
-		(show_timing, ticket_status, movie_show_dates_id) 
-		VALUES (?, ?, ?);
+		(show_timing, ticket_status, movie_show_dates_id, pre_expiry_second, post_expiry_second) 
+		VALUES (?, ?, ?, ?, ?);
 	`
 
 	stmtDate, err := tx.PrepareContext(ctx, dateQuery)
@@ -155,20 +157,54 @@ func registerShowTimings(ctx context.Context, tx *sql.Tx, dates []models.ShowDat
 			return fmt.Errorf("execution: %w", err)
 		}
 
-		datesId, err := res.LastInsertId()
+		dateId, err := res.LastInsertId()
 		if err != nil {
 			return fmt.Errorf("error in getting the last inserted id: %w",err)
 		}
 
 		for _, timing := range date.Timing {
-			if _, err := stmtTiming.ExecContext(ctx, 
+			res, err := stmtTiming.ExecContext(ctx, 
 				timing.Time,
 				timing.TicketStatus,
-				datesId); err != nil {
+				dateId,
+				timing.PreExpiry,
+				timing.PostExpiry,
+			)
+			if err != nil {
 				return fmt.Errorf("execution: %w", err)
 			}
-			//TODO: create a room and register a placeholder for hall seat, 
-			//		ADMIN_ID:HALL_ID:SHOW_ID:SHOW_DATE:SHOW_TIME
+
+			timingID , err := res.LastInsertId()
+			if err != nil {
+				return fmt.Errorf("last id: hall_show_timings: %w", err)
+			}
+
+			// ----redis
+			if timing.TicketStatus {
+				showTimeSecs, err := utils.ConvertToSeconds(date.Date, timing.Time)
+				if err != nil {
+					return fmt.Errorf("timing conversion: hall_show_timings: %w", err)
+				}
+
+				preExpiry := showTimeSecs - int64(timing.PreExpiry)
+				postExpiry := showTimeSecs + int64(timing.PostExpiry)
+				schema := &redisdb.SeatRegsSchema{
+					TimingID: timingID,
+					KeyExpiry: postExpiry,
+					PreExpiryKey: preExpiry,
+				}
+				//----regs
+				err = schema.InitialReservedSeatsRegs(ctx)
+				if err != nil {
+					return fmt.Errorf("redis: %w", err)
+				}
+				err = schema.InitialBookedSeatsRegs(ctx)
+				if err != nil {
+					return fmt.Errorf("redis: %w", err)
+				}
+				//----regs
+			}
+			//----redis
 		}
 	}
 
