@@ -3,40 +3,37 @@ package config
 import (
 	"os"
 	"sync"
-
-	// "github.com/joho/godotenv"
 )
 
 type ENV struct {
-	JWTSECRETKEY []byte 
-	DSN          string 
-	PORT		 string
-	GOOGLE_CLIENT_ID string
-	GOOGLE_CLIENT_SECRET string
-	GOOGLE_SCOPE_EMAIL_URL string
-	GOOGLE_SCOPE_PROFILE_URL string
-	REDIRECT_URL string
-	OAUTH_STATE string
-	DEFAULT_ORIGIN string
-	GOOGLE_USERINFO_URL string
-	REDIS_URL string
+	JWTSECRETKEY                  []byte
+	DSN                           string
+	PORT                          string
+	GOOGLE_CLIENT_ID              string
+	GOOGLE_CLIENT_SECRET          string
+	GOOGLE_SCOPE_EMAIL_URL        string
+	GOOGLE_SCOPE_PROFILE_URL      string
+	REDIRECT_URL                  string
+	OAUTH_STATE                   string
+	DEFAULT_ORIGIN                string
+	GOOGLE_USERINFO_URL           string
+	REDIS_URL                     string
 	GRPC_IMAGE_UPLOAD_SERVER_HOST string
 }
 
 var (
-	Env  ENV
-	once sync.Once
+	Env            ENV
+	ValidSetsField ValidSetFields
+	once           sync.Once
 )
 
-func LoadConfig() bool {
-	// if err := godotenv.Load(); err != nil {
-	// 	// fmt.Println(err)
-	// 	return false
-	// }
-	return loadEnv()
+type ValidSetFields struct {
+	Hall      map[string]struct{}
+	Operation map[string]struct{}
+	Location  map[string]struct{}
 }
 
-func loadEnv() bool {
+func LoadConfig() bool {
 	var success = true
 	once.Do(func() {
 		Env.JWTSECRETKEY = []byte(os.Getenv("JWT_SECRET_KEY"))
@@ -53,19 +50,31 @@ func loadEnv() bool {
 		Env.REDIS_URL = os.Getenv("REDIS_URL")
 		Env.GRPC_IMAGE_UPLOAD_SERVER_HOST = os.Getenv("GRPC_IMAGE_UPLOAD_SERVER_HOST")
 
-		if len(Env.JWTSECRETKEY) == 0 {
-			success = false
+		ValidSetsField.Hall = map[string]struct{}{
+			"name":    {},
+			"manager": {},
+			"contact": {},
 		}
 
-		if Env.DSN == "" {
-			success = false
+		ValidSetsField.Location = map[string]struct{}{
+			"address":     {},
+			"city":        {},
+			"state":       {},
+			"postal_code": {},
+			"latitude":    {},
+			"longitude":   {},
 		}
 
-		if Env.PORT == "" {
-			success = false
+		ValidSetsField.Operation = map[string]struct{}{
+			"open_time":   {},
+			"closed_time": {},
 		}
-
-		
 	})
 	return success
 }
+
+
+	// if err := godotenv.Load(); err != nil {
+	// 	// fmt.Println(err)
+	// 	return false
+	// }

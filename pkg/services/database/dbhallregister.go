@@ -62,7 +62,7 @@ func RegisterHall(ctx context.Context, hall models.Hall, adminId int64, hallId *
 
 func registerActualHall(ctx context.Context,tx *sql.Tx, actualHall models.ActualHall) (int64, error) {
 	var hallId int64
-	stmt, err := tx.PrepareContext(ctx, `INSERT INTO hall (hall_name, hall_manager, hall_contact, admin_id) VALUES (?, ?, ?, ?);`)
+	stmt, err := tx.PrepareContext(ctx, `INSERT INTO hall (name, manager, contact, admin_id) VALUES (?, ?, ?, ?);`)
 	if err != nil {
 		return hallId, fmt.Errorf("prepare context : %w",err)
 	}

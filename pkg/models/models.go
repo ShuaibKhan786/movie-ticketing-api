@@ -40,13 +40,17 @@ type SeatLayout struct {
 }
 
 type SeatType struct {
-	Name            string   `json:"name"`
-	Price           int      `json:"price"`
-	SeatRow         int      `json:"seat_row"`
-	SeatColumn      int      `json:"seat_column"`
-	SeatMatrix      string   `json:"seat_matrix"`
-	OrderFromScreen int      `json:"order_from_screen"`
+	Name            *string   `json:"name"`
+	Price           *int      `json:"price"`
+	SeatRow         *int      `json:"seat_row"`
+	SeatColumn      *int      `json:"seat_column"`
+	SeatMatrix      *string   `json:"seat_matrix"`
+	OrderFromScreen *int      `json:"order_from_screen"`
 	RowName         []string `json:"row_names"`
+}
+
+type SeatRowNameUpdate struct {
+	RowName *string `json:"row_name"`
 }
 
 type UserDetails struct {

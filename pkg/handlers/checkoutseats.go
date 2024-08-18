@@ -9,6 +9,7 @@ import (
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/config"
 	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
+	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/security"
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 	"github.com/redis/go-redis/v9"
 )
@@ -23,6 +24,18 @@ type Seats struct {
 //	    "seats": ["d3"]
 //	}
 func CheckoutSeats(w http.ResponseWriter, r *http.Request) {
+	var role string
+	claims, ok := r.Context().Value(config.ClaimsContextKey).(security.Claims)
+	if ok {
+		if claims.Role == config.AdminRole {
+			role = config.AdminRole
+		}else {
+			role = config.UserRole
+		}
+	}else {
+		role = config.UserRole
+	}
+
 	timingID, err := getPathParameterValueInt64(r, "timing_id")
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
@@ -59,7 +72,7 @@ func CheckoutSeats(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
-	bookedSeats, err := bookedSeatSchema.IsSeatAvilableBS(ctx, config.UserRole)
+	bookedSeats, err := bookedSeatSchema.IsSeatAvilableBS(ctx, role)
 	if err != nil {
 		switch {
 		case errors.Is(err, redis.Nil):
@@ -81,7 +94,7 @@ func CheckoutSeats(w http.ResponseWriter, r *http.Request) {
 		Seats:    seats.Seats,
 	}
 
-	reservedSeats, err := reservedSeatSchema.ReservedSeatsRegs(ctx, config.AdminRole)
+	reservedSeats, err := reservedSeatSchema.ReservedSeatsRegs(ctx, role)
 	if err != nil {
 		switch {
 		case errors.Is(err, redis.Nil):

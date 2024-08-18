@@ -17,24 +17,24 @@ type SignInResponse struct {
 }
 
 
-// credentials {
+// payload:
+// {
 //		Role: "admin",
 //		Provider: "google",
 //		RedirectedURL: "http://localhost:5173/dashboard",
 //		Origin: "http://localhost:5173"	
 //}
-
 // SignIn handles the OAuth sign-in process
-// Step 0: Read the request body
-// Step 2: Validate the JSON payload
-// Step 3: Decode the credentials
-// Validate the credentials
-// Step 4: Configure the OAuth2.0 provider
-// Step 5: Generate the authorization URL
-// Step 6: Encode the credentials to a base64 string
-// Step 7: Encode the response to JSON
-// Step 8: Set the encoded credentials as a cookie
-// Step 9: Send the response to the client
+// 	- Step 0: Read the request body
+// 	- Step 2: Validate the JSON payload
+// 	- Step 3: Decode the credentials
+// 	- Validate the credentials
+// 	- Step 4: Configure the OAuth2.0 provider
+// 	- Step 5: Generate the authorization URL
+// 	- Step 6: Encode the credentials to a base64 string
+// 	- Step 7: Encode the response to JSON
+// 	- Step 8: Set the encoded credentials as a cookie
+// 	- Step 9: Send the response to the client
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	
 	body, err := io.ReadAll(r.Body)

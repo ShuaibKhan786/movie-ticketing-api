@@ -20,7 +20,7 @@ func GetHallDetailsByID(ctx context.Context, movieId int64) ([]HallDetails, erro
 	const query = `
 		SELECT 
 			h.id,
-			h.hall_name,
+			h.name,
 			hl.address,
 			hl.city,
 			hl.state,

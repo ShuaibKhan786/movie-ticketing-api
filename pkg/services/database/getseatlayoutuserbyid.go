@@ -16,7 +16,7 @@ type SeatLayout struct {
 	BookedSeats []string `json:"booked_seats"`
 }
 
-func GetHallSeatLayoutByHallID(ctx context.Context, hallID, timingID int64) (SeatLayout, error){
+func GetHallSeatLayoutUserByHallID(ctx context.Context, hallID, timingID int64) (SeatLayout, error){
 	var seatlayout SeatLayout
 
 	tx, err := db.BeginTx(ctx, nil)

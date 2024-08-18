@@ -63,7 +63,7 @@ func GetHallMetadata(ctx context.Context,hallId int64) (HallMetaData, error) {
 func getActualHallData(ctx context.Context, tx *sql.Tx, adminId int64) (models.ActualHall, error) {
 	var actualHall models.ActualHall
 
-	stmt, err := tx.PrepareContext(ctx, `SELECT hall_name, hall_manager, hall_contact, admin_id FROM hall WHERE id=?`)
+	stmt, err := tx.PrepareContext(ctx, `SELECT name, manager, contact, admin_id FROM hall WHERE id=?`)
 	if err != nil {
 		return actualHall, fmt.Errorf("prepare context : %w", err)
 	}

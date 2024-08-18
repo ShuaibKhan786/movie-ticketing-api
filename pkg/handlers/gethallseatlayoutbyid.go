@@ -27,7 +27,7 @@ func GetHallSeatLayoutByHallID(w http.ResponseWriter, r *http.Request) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2 * time.Second)
 	defer cancel()
-	seatLayout, err := database.GetHallSeatLayoutByHallID(ctx, hallID, timingID)
+	seatLayout, err := database.GetHallSeatLayoutUserByHallID(ctx, hallID, timingID)
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
 		return

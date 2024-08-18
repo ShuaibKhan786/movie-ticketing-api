@@ -20,6 +20,13 @@ func HallRegister(w http.ResponseWriter, r *http.Request) {
 		utils.JSONResponse(&w, "invalid claims", http.StatusBadRequest)
 		return
 	}
+
+	//making sure an admin can registered only one hall
+	_, err := isHallRegistered(claims) 
+	if err == nil {
+		utils.JSONResponse(&w, "hall already registered", http.StatusBadRequest)
+		return
+	}
 	
 	body, err := io.ReadAll(r.Body) 
 	if err != nil {
@@ -47,13 +54,7 @@ func HallRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = isHallRegistered(claims) 
-	if err == nil {
-		utils.JSONResponse(&w, "hall already registered", http.StatusBadRequest)
-		return
-	}
-
-	//making sure that only one hall be exists
+	//making sure that only one hall be exists and does not conflict 
 	exists, err := database.IsValueExists("hall", "hall_name", hallMetadata.Name)
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)

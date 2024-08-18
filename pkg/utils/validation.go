@@ -97,3 +97,46 @@ func isValidTime(timeStr string) bool {
 	_, err := time.Parse("15:04:00", timeStr) // assuming time in HH:MM:SS format
 	return err == nil
 }
+
+func ValidateHallMDUpd(m map[string]map[string]interface{}) error {
+	for category, fields := range m {
+		switch category {
+		case "hall":
+			for field, value := range fields {
+				if _, valid := config.ValidSetsField.Hall[field]; !valid {
+					return errors.New("invalid field '" + field + "' in category '" + category + "'")
+				}
+				if strValue, ok := value.(string); ok && strValue == "" {
+					return errors.New("field '" + field + "' in category '" + category + "' has an empty value")
+				}
+			}
+			fields["tName"] = "hall"
+			fields["idName"] = "id"
+		case "location":
+			for field, value := range fields {
+				if _, valid := config.ValidSetsField.Location[field]; !valid {
+					return errors.New("invalid field '" + field + "' in category '" + category + "'")
+				}
+				if strValue, ok := value.(string); ok && strValue == "" {
+					return errors.New("field '" + field + "' in category '" + category + "' has an empty value")
+				}
+			}
+			fields["tName"] = "hall_location"
+			fields["idName"] = "hall_id"
+		case "operation":
+			for field, value := range fields {
+				if _, valid := config.ValidSetsField.Operation[field]; !valid {
+					return errors.New("invalid field '" + field + "' in category '" + category + "'")
+				}
+				if strValue, ok := value.(string); ok && strValue == "" {
+					return errors.New("field '" + field + "' in category '" + category + "' has an empty value")
+				}
+			}
+			fields["tName"] = "hall_operation_time"
+			fields["idName"] = "hall_id"
+		default:
+			return errors.New("invalid category: " + category)
+		}
+	}
+	return nil
+}
