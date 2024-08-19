@@ -1,5 +1,4 @@
-microservice./
-docs./
-schema./
+/microservice/image-upload/images/.
+/docs/.
 *.exe
 *.env
