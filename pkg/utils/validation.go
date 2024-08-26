@@ -140,3 +140,31 @@ func ValidateHallMDUpd(m map[string]map[string]interface{}) error {
 	}
 	return nil
 }
+
+func ValidateBookedRequestPayload(payload models.BookedRequestPayload) bool {
+	if payload.ID == nil {
+		return false
+	}
+
+	if payload.Counts == nil {
+		return false
+	}
+
+	if payload.Seats == nil {
+		return false
+	}
+
+	if payload.PayableAmount == nil {
+		return false
+	}
+
+	if payload.PaymentMode == nil {
+		return false
+	}
+
+	if payload.CustomerPhoneNo == nil {
+		return false
+	}
+
+	return false
+}

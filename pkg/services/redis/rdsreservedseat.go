@@ -152,6 +152,71 @@ func (schema *ReservedSeatSchema) ReservedSeatsRegs(ctx context.Context, role st
 	return nil, fmt.Errorf("unexpected response from Lua script")
 }
 
+func (schema *ReservedSeatSchema) IsRSNotExpired(ctx context.Context, role string) (bool, error) {
+	if role == "user" {
+		userRBKey := fmt.Sprintf(
+			USER_RB_SEAT_KEY,
+			schema.TimingID,
+		)
+
+		_, err := rdb.Get(ctx, userRBKey).Result()
+		if err == redis.Nil {
+			return false, redis.Nil
+		}
+		if err != nil {
+			return false, fmt.Errorf("checking pre expiry Reserved Seat: %w", err)
+		}
+	}
+
+	reservedKey := fmt.Sprintf(
+		RESERVED_SEAT_KEY,
+		schema.TimingID,
+	)
+
+	currentTime := time.Now().Unix()
+
+	// Lua script to check if any seat is expired
+	luaScript := `
+		local seats = cjson.decode(ARGV[1])
+		local reservedKey = KEYS[1]
+		local currentTime = tonumber(ARGV[2])
+
+		-- Check each seat's expiration
+		for i, seat in ipairs(seats) do
+			local score = redis.call("ZSCORE", reservedKey, seat)
+			if score and tonumber(score) < currentTime then
+				return 0
+			end
+		end
+
+		return 1
+	`
+
+	seatsJSON, err := json.Marshal(schema.Seats)
+	if err != nil {
+		return false, fmt.Errorf("encoding seats to JSON: %w", err)
+	}
+
+	// Execute the Lua script
+	result, err := rdb.Eval(
+		ctx,
+		luaScript,
+		[]string{reservedKey},
+		string(seatsJSON),
+		currentTime,
+	).Result()
+
+	if err != nil {
+		return false, fmt.Errorf("checking Reserved Seat expiration: %w", err)
+	}
+
+	if result == int64(0) {
+		return false, nil
+	}
+
+	return true, nil
+} 
+
 
 // GetAllReservedSeats retrieves all reserved seats that are not expired
 func (timingID TimingID) GetAllReservedSeats(ctx context.Context) ([]string, error) {

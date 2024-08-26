@@ -21,4 +21,7 @@ const (
 	RegexEmail        string = `^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$`
 
 	RedisZeroExpirationTime time.Duration = 0
+
+	Cash = "cash"
+	UPI = "upi"
 )

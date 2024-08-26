@@ -1,4 +1,3 @@
-
 services:
   movie-ticketing:
     depends_on:

@@ -40,12 +40,13 @@ type SeatLayout struct {
 }
 
 type SeatType struct {
-	Name            *string   `json:"name"`
-	Price           *int      `json:"price"`
-	SeatRow         *int      `json:"seat_row"`
-	SeatColumn      *int      `json:"seat_column"`
-	SeatMatrix      *string   `json:"seat_matrix"`
-	OrderFromScreen *int      `json:"order_from_screen"`
+	ID              *int64   `json:"id"`
+	Name            *string  `json:"name"`
+	Price           *int     `json:"price"`
+	SeatRow         *int     `json:"seat_row"`
+	SeatColumn      *int     `json:"seat_column"`
+	SeatMatrix      *string  `json:"seat_matrix"`
+	OrderFromScreen *int     `json:"order_from_screen"`
 	RowName         []string `json:"row_names"`
 }
 
@@ -109,4 +110,28 @@ type Timing struct {
 	//it means ticket is avilable for booking of that timing
 	PreExpiry  int `json:"pre_expiry_secs"`
 	PostExpiry int `json:"post_expiry_secs"`
+}
+
+type BookedRequestPayload struct {
+	ID              *int64    `json:"id"`
+	Counts          *int      `json:"counts"`
+	Seats           *[]string `json:"seats"`
+	PayableAmount   *int      `json:"payable_amount"`
+	PaymentMode     *string   `json:"payment_mode"`
+	CashAmount      *int      `json:"cash_amount"`
+	CustomerPhoneNo *string   `json:"customer_phone_no"`
+}
+
+type BookedResponsePayload struct {
+	CustomerPhoneNo *string  `json:"customer_phone_no"`
+	MovieName       *string  `json:"movie_name"`
+	HallName        *string  `json:"hall_name"`
+	ShowDate        *string  `json:"show_date"`
+	ShowTime        *string  `json:"show_time"`
+	Tickets         []Ticket `json:"tickets"`
+}
+
+type Ticket struct {
+	TicketNumber *string `json:"ticket_number"`
+	SeatNumber   *string `json:"seat_number"`
 }

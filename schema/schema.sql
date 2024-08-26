@@ -183,16 +183,33 @@ CREATE TABLE movie_show_timings (
 CREATE TABLE booking (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    movie_show_id INT,
-    seat_number VARCHAR(255),
-    booking_timing DATETIME,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (movie_show_id) REFERENCES movie_show(id)
+    movie_show_id INT NOT NULL,
+    movie_show_timings_id INT NOT NULL,
+    seat_type_id INT NOT NULL,
+    booking_timing DATETIME NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) NOT NULL,
+    booking_status TINYINT(1) DEFAULT 0,
+    transaction_id VARCHAR(255),
+    discount_applied INT,
+    amount INT NOT NULL,
+    mode_of_payment VARCHAR(255) NOT NULL,
+    created_at DATETIME,
+    updated_at DATETIME,
+    
+    FOREIGN KEY (movie_show_id) REFERENCES movie_show(id),
+    FOREIGN KEY (movie_show_timings_id) REFERENCES movie_show_timings(id),
+    FOREIGN KEY (seat_type_id) REFERENCES seat_type(id)
 );
+v
 
 CREATE TABLE ticket (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_number VARCHAR(255) UNIQUE NOT NULL,
-    booking_id INT,
+    phone_number VARCHAR(255) NOT NULL,
+    booking_id INT NOT NULL,
+    seat_number VARCHAR(255) NOT NULL,
+    ticket_issue_date DATETIME,
+    
     FOREIGN KEY (booking_id) REFERENCES booking(id)
 );

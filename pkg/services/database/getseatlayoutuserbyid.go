@@ -53,6 +53,7 @@ func GetHallSeatLayoutUserByHallID(ctx context.Context, hallID, timingID int64) 
 func getDefaultSeatLayout(ctx context.Context, tx *sql.Tx, seatLayout *SeatLayout, hallID int64) error {
 	query := `
 		SELECT 
+			st.id,
 			st.name, 
 			st.price, 
 			st.seat_row, 
@@ -82,6 +83,7 @@ func getDefaultSeatLayout(ctx context.Context, tx *sql.Tx, seatLayout *SeatLayou
 		var seatType models.SeatType
 		var rowNameString string
 		if err := rows.Scan(
+			&seatType.ID,
 			&seatType.Name,
 			&seatType.Price,
 			&seatType.SeatRow,

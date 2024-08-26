@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	//just for making sure that 
+	//just for making sure that
 	//mysql server database is ready for connection
 	time.Sleep(10 * time.Second)
 
@@ -27,11 +27,10 @@ func main() {
 		database.CloseDB()
 		log.Fatal("mysql server", err)
 	}
-	
+
 	if err := redisdb.InitRedis(); err != nil {
 		log.Fatal("redis server", err)
 	}
-
 
 	// Unprotected routes (no token auth required)
 	unprotectedRouter := http.NewServeMux()
@@ -40,7 +39,6 @@ func main() {
 	// Protected routes (token auth required)
 	protectedRouter := http.NewServeMux()
 	handlers.RegisterProtectedRouter(protectedRouter)
-
 
 	protectedRouterWithMiddleware := middlewares.EnsureTokenAuth(protectedRouter)
 
@@ -58,7 +56,7 @@ func main() {
 	)
 
 	// Final server setup with all middlewares and routers
-	addr := fmt.Sprintf(":%s",config.Env.PORT)
+	addr := fmt.Sprintf(":%s", config.Env.PORT)
 	server := http.Server{
 		Addr:    addr,
 		Handler: commonMiddlewareStack(versionRouter),
