@@ -166,5 +166,5 @@ func ValidateBookedRequestPayload(payload models.BookedRequestPayload) bool {
 		return false
 	}
 
-	return false
+	return true
 }

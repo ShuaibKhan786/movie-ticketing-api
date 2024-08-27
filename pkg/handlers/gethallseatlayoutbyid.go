@@ -11,7 +11,7 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
-//url schema: http://localhost:3090/api/v1/hall/{hall_id}/seatlayout?timing_id=id
+// url schema: http://localhost:3090/api/v1/hall/{hall_id}/seatlayout?timing_id=id
 func GetHallSeatLayoutByHallID(w http.ResponseWriter, r *http.Request) {
 	hallID, err := getPathParameterValueInt64(r, "hall_id")
 	if err != nil {
@@ -25,7 +25,7 @@ func GetHallSeatLayoutByHallID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 	seatLayout, err := database.GetHallSeatLayoutUserByHallID(ctx, hallID, timingID)
 	if err != nil {
@@ -43,14 +43,14 @@ func GetHallSeatLayoutByHallID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonSeatLayout)
 
-	if len(seatLayout.ReservedSeats) > 1 {
-		go redisReservedSeatsCleanup(timingID)
-	}
+	// if len(seatLayout.ReservedSeats) > 1 {
+	go redisReservedSeatsCleanup(timingID)
+	// }
 }
 
 func redisReservedSeatsCleanup(timingID int64) {
 	t := redisdb.TimingID(timingID)
-	ctx, cancel := context.WithTimeout(context.Background(), 500 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Second)
 	defer cancel()
 	t.CleanupReservedSeats(ctx)
 	//make sure the error in the log

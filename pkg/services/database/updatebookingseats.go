@@ -45,9 +45,12 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		Seats:    *details.Seats,
 	}
 
-	_, err = bookedSchema.IsSeatAvilableBS(ctx, role)
+	bookedSeats, err := bookedSchema.IsSeatAvilableBS(ctx, role)
 	if err != nil {
 		return payload, fmt.Errorf("failed to check booked seat in Redis: %w", err)
+	}
+	if len(bookedSeats) > 0 {
+		return payload, fmt.Errorf("one or more seat are booked")
 	}
 
 	isNotExpired, err := reservedSchema.IsRSNotExpired(ctx, role)
@@ -58,24 +61,25 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		return payload, fmt.Errorf("one or more seat reservations have expired")
 	}
 
-	// update booking table
 	bookingQuery := `
 			INSERT INTO booking (
 				user_id, movie_show_id, movie_show_timings_id, seat_type_id, booking_timing,
 				role, payment_status, booking_status, transaction_id, discount_applied, amount, 
-				mode_of_payment, created_at, updated_at, cash_amount
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				mode_of_payment, created_at, updated_at, cash_amount, phone_number
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	res, err := tx.ExecContext(
 		ctx,
 		bookingQuery,
 		userID, movieShowID, timingID, details.ID, time.Now(),
 		role, "completed", true, nil, nil, details.PayableAmount,
-		details.PaymentMode, time.Now(), time.Now(), details.CashAmount,
+		details.PaymentMode, time.Now(), time.Now(), details.CashAmount, details.CustomerPhoneNo,
 	)
 	if err != nil {
 		return payload, fmt.Errorf("failed to insert booking table: %w", err)
 	}
+
+
 	bookingID, err := res.LastInsertId()
 	if err != nil {
 		return payload, fmt.Errorf("failed to get the last insertedID from booking table: %w", err)
@@ -88,9 +92,9 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		// Insert into ticket table
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO ticket (
-				ticket_number, phone_number, booking_id, seat_number, ticket_issue_date
-			) VALUES (?, ?, ?, ?, ?)`,
-			ticketNumber, details.CustomerPhoneNo, bookingID, seat, time.Now(),
+				ticket_number, booking_id, seat_number, ticket_issue_date
+			) VALUES (?, ?, ?, ?)`,
+			ticketNumber, bookingID, seat, time.Now(),
 		)
 		if err != nil {
 			return payload, fmt.Errorf("failed to insert ticket table: %w", err)
@@ -102,7 +106,7 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		}
 	}
 
-	//finally update the seats to booked seats
+	// finally update the seats to booked seats
 	err = bookedSchema.BookedSeatsRegs(ctx)
 	if err != nil {
 		return payload, fmt.Errorf("redis booked seats update failed: %v: %w", details.Seats, err)

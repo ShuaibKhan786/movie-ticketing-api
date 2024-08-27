@@ -196,17 +196,18 @@ CREATE TABLE booking (
     mode_of_payment VARCHAR(255) NOT NULL,
     created_at DATETIME,
     updated_at DATETIME,
+    phone_number VARCHAR(255) NOT NULL,
     
     FOREIGN KEY (movie_show_id) REFERENCES movie_show(id),
     FOREIGN KEY (movie_show_timings_id) REFERENCES movie_show_timings(id),
     FOREIGN KEY (seat_type_id) REFERENCES seat_type(id)
 );
-v
+
 
 CREATE TABLE ticket (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_number VARCHAR(255) UNIQUE NOT NULL,
-    phone_number VARCHAR(255) NOT NULL,
+    
     booking_id INT NOT NULL,
     seat_number VARCHAR(255) NOT NULL,
     ticket_issue_date DATETIME,
