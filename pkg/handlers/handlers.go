@@ -43,6 +43,8 @@ func RegisterProtectedRouter(router *http.ServeMux) {
 	router.HandleFunc("POST /admin/seats/checkout/{timing_id}", CheckoutSeats)
 	router.HandleFunc("POST /admin/seats/book/{timing_id}", BookedSeats)
 
+	router.HandleFunc("GET /admin/tickets/sold", GetTicketsSold)
+
 	router.HandleFunc("POST /admin/hall/show/timings/avilability", CheckTimingsAvilablity)
 	router.HandleFunc("GET /admin/cast", SearchCast)
 	router.HandleFunc("POST /admin/image/upload", UploadImage)

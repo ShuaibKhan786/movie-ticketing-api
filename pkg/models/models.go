@@ -135,3 +135,8 @@ type Ticket struct {
 	TicketNumber *string `json:"ticket_number"`
 	SeatNumber   *string `json:"seat_number"`
 }
+
+type TicketSold struct {
+	MovieName       *string `json:"movie_name"`
+	NoOfTicketsSold *int64  `json:"ticket_sold"`
+}
