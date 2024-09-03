@@ -159,7 +159,7 @@ This API provides a set of utility routes designed for both admin and user roles
    - Status Code: `500 Internal Server Error`
         internal server error
 ---
-### 4. Image Upload(admin only)
+### 4. Image Upload (admin only)
  - **Method**: `POST`
  - **Endpoint**: `/api/v1/auth/admin/image/upload`
  - **Description**: Allow admin to upload an image such movie, cast poster.

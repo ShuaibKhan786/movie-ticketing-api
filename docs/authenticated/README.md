@@ -118,10 +118,10 @@ This API provides endpoints for managing movie hall registrations, seat layouts,
  - **Endpoint**: `/api/v1/auth/admin/hall/show/register`
  - **Description**: Allows an admin to register a movie show, including movie details, cast, and show timings.
  - **Flow**
-    - **Movie Existence Check**: Check if the movie exists using the [Search Movie route](https://github.com/ShuaibKhan786/movie-ticketing-api/docs/utility/README.md#1-search-movie-common). If it exists, use the `movie_id`. If not, register the movie.
-    - **Cast Existence Check**: Check if the cast exists using the [Search Cast route](). If they exist, provide an alias; otherwise, register the cast details.
-    - **Timing Conflict Check**: Verify show timings do not conflict using the [Check Timings Availability route]().
-    - **Movie Poster Upload**: Prompt the admin to upload the movie poster or cast images using the [Image Upload route]().
+    - **Movie Existence Check**: Check if the movie exists using the [Search Movie route](https://github.com/ShuaibKhan786/movie-ticketing-api/blob/main/docs/utility/README.md#1-search-movie-common). If it exists, use the `movie_id`. If not, register the movie.
+    - **Cast Existence Check**: Check if the cast exists using the [Search Cast route](https://github.com/ShuaibKhan786/movie-ticketing-api/blob/main/docs/utility/README.md#2-search-cast-admin-only). If they exist, provide an alias; otherwise, register the cast details.
+    - **Timing Conflict Check**: Verify show timings do not conflict using the [Check Timings Availability route](https://github.com/ShuaibKhan786/movie-ticketing-api/blob/main/docs/utility/README.md#3-check-timings-avilability-admin-only).
+    - **Movie Poster Upload**: Prompt the admin to upload the movie poster or cast images using the [Image Upload route](https://github.com/ShuaibKhan786/movie-ticketing-api/blob/main/docs/utility/README.md#4-image-upload-admin-only).
     
   - **Request Parameter**
     - Headers:
