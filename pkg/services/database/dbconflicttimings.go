@@ -7,8 +7,8 @@ import (
 )
 
 type DBShowDate struct {
-	Date   string   `json:"date"`
-	Timing []string `json:"timings"`
+	Date   string   `json:"show_date"`
+	Timing []string `json:"date_timings"`
 }
 
 func GetConflictTimings(ctx context.Context, hallId int64, providedTimings []DBShowDate) ([]DBShowDate, error) {

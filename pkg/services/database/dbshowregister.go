@@ -45,7 +45,7 @@ func RegisterShow(ctx context.Context, show models.Show, hallId int64) error {
 		return err
 	}
 
-	if show.Movie.Id == 0 {
+	if show.Movie.Id == nil {
 		if err = registerAllTheCast(ctx, tx, show.Cast, tempMovieId); err != nil {
 			tx.Rollback()
 			return err
@@ -58,7 +58,7 @@ func RegisterShow(ctx context.Context, show models.Show, hallId int64) error {
 func registerMovie(ctx context.Context, tx *sql.Tx, movie models.Movie) (int64, error) {
 	var movieId int64
 
-	if movie.Id == 0 {
+	if movie.Id == nil {
 		portraitUrlId, err := registerPosterUrl(ctx, tx, movie.PortraitUrl)
 		if err != nil {
 			return movieId, fmt.Errorf("register movie: %w", err)
@@ -99,11 +99,11 @@ func registerMovie(ctx context.Context, tx *sql.Tx, movie models.Movie) (int64, 
 		return movieId, nil
 	}
 
-	movieId = movie.Id
+	movieId = *movie.Id
 	return movieId, nil
 }
 
-func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64, status string) (int64, error) {
+func registerActualShow(ctx context.Context, tx *sql.Tx, movieId, hallId int64, status bool) (int64, error) {
 	const query = `INSERT INTO movie_show (movie_id, hall_id, status) VALUES (?, ?, ?)`
 
 	stmt, err := tx.PrepareContext(ctx, query)
@@ -257,17 +257,18 @@ func registerProducer(ctx context.Context, tx *sql.Tx, producer models.CastBluep
 }
 
 func registerCast(ctx context.Context, tx *sql.Tx, castMember models.CastBlueprint, movieId int64, role, table, column string) error {
-	if castMember.Id == 0 {
+	if castMember.Id == nil {
 		castId, err := registerNewCast(ctx, tx, castMember, role)
 		if err != nil {
 			return err
 		}
-		castMember.Id = castId
+		castMember.Id = new(int64)
+		*castMember.Id = castId
 	}
 	return updateCastIdInCastList(ctx, tx, movieId, castMember.Id, castMember.Alias, table, column)
 }
 
-func updateCastIdInCastList(ctx context.Context, tx *sql.Tx, movieId, castId int64, alias, table, column string) error {
+func updateCastIdInCastList(ctx context.Context, tx *sql.Tx, movieId int64, castId *int64, alias *string, table, column string) error {
 	var query string
 
 	switch table {
@@ -304,11 +305,12 @@ func registerNewCast(ctx context.Context, tx *sql.Tx, cast models.CastBlueprint,
 
 	var posterUrlId sql.NullInt64
 	var err error
-	if *cast.PosterUrl != "" {
-		posterUrlId.Int64, err = registerPosterUrl(ctx, tx, *cast.PosterUrl)
+	if cast.PosterUrl != nil {
+		posterUrlId.Int64, err = registerPosterUrl(ctx, tx, cast.PosterUrl)
 		if err != nil {
 			return castId, fmt.Errorf("register %s: %w", role, err)
 		}
+		posterUrlId.Valid = true	
 	}
 
 	query := fmt.Sprintf(`INSERT INTO %s (name, poster_url_id) VALUES (?, ?);`, role)
@@ -332,7 +334,7 @@ func registerNewCast(ctx context.Context, tx *sql.Tx, cast models.CastBlueprint,
 	return castId, nil
 }
 
-func registerPosterUrl(ctx context.Context, tx *sql.Tx, url string) (int64, error) {
+func registerPosterUrl(ctx context.Context, tx *sql.Tx, url *string) (int64, error) {
 	var posterId int64
 
 	const query = `INSERT INTO poster_urls (url) VALUES (?)`

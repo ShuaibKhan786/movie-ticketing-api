@@ -30,7 +30,7 @@ func SeatlayoutRegister(w http.ResponseWriter, r *http.Request) {
 
 	err = isSeatLayoutRegistered(claims)
 	if err == nil {
-		utils.JSONResponse(&w, "seat lyout already registered", http.StatusBadRequest)
+		utils.JSONResponse(&w, "seat layout already registered", http.StatusBadRequest)
 		return
 	}
 

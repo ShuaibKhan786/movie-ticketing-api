@@ -1,9 +1,9 @@
-
 package handlers
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -12,10 +12,8 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
-// URL schema: http://localhost:3090/api/v1/auth/admin/cast?search_role=actor&search_name=Christian Bale
-// This is a protected route, so it requires a JWT token and must be accessed by an admin.
-
-
+// URL schema:
+// http://localhost:3090/api/v1/auth/admin/cast?search_role=actor&search_name=Christian Bale
 func SearchCast(w http.ResponseWriter, r *http.Request) {
 	role, name, err := getRoleAndNameFromTheQuery(r)
 	if err != nil {
@@ -28,18 +26,20 @@ func SearchCast(w http.ResponseWriter, r *http.Request) {
 
 	casts, err := database.SearchCastByName(ctx, role, name)
 	if err != nil {
-		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
+		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	fmt.Println(casts)
+
 	if len(casts) == 0 {
-		utils.JSONResponse(&w, "no cast found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	jsonMovies, err := utils.EncodeJson(&casts)
 	if err != nil {
-		utils.JSONResponse(&w, "error encoding casts to JSON", http.StatusNotFound)
+		utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 

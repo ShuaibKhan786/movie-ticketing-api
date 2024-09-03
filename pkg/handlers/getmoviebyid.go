@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"net/http"
 	"strconv"
@@ -12,7 +13,7 @@ import (
 )
 
 //url schema: http://localhost:3090/api/v1/movie/{id}
-// using the id which is a movie id 
+// using the id which is a movie id
 // will send all the movie details
 func GetMovieByID(w http.ResponseWriter, r *http.Request) {
 	movieId, err := getPathParameterValueInt64(r, "id")
@@ -25,6 +26,10 @@ func GetMovieByID(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	movieDetails, err := database.GetMovieDetailsByID(ctx, movieId)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}

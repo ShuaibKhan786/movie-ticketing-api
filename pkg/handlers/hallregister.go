@@ -55,7 +55,7 @@ func HallRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//making sure that only one hall be exists and does not conflict 
-	exists, err := database.IsValueExists("hall", "hall_name", hallMetadata.Name)
+	exists, err := database.IsValueExists("hall", "name", hallMetadata.Name)
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return

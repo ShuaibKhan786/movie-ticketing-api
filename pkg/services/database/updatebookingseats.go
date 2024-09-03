@@ -3,12 +3,18 @@ package database
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 	redisdb "github.com/ShuaibKhan786/movie-ticketing-api/pkg/services/redis"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrSeatsAlreadyBooked = errors.New("one or more seat are booked")
+	ErrExpiredReservedSeats = errors.New("one or more seat reservations have expired")
 )
 
 func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, details models.BookedRequestPayload, seatsMD CheckoutMD, role string) (models.BookedResponsePayload, error) {
@@ -50,7 +56,7 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		return payload, fmt.Errorf("failed to check booked seat in Redis: %w", err)
 	}
 	if len(bookedSeats) > 0 {
-		return payload, fmt.Errorf("one or more seat are booked")
+		return payload, ErrSeatsAlreadyBooked
 	}
 
 	isNotExpired, err := reservedSchema.IsRSNotExpired(ctx, role)
@@ -58,7 +64,7 @@ func UpdateBookingSeats(ctx context.Context, userID *int64, timingID int64, deta
 		return payload, fmt.Errorf("failed to check reserved seat in Redis: %w", err)
 	}
 	if !isNotExpired {
-		return payload, fmt.Errorf("one or more seat reservations have expired")
+		return payload, ErrExpiredReservedSeats
 	}
 
 	bookingQuery := `

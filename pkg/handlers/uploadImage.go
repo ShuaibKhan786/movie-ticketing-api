@@ -23,8 +23,8 @@ const (
     LANDSCAPE_IMAGE_WIDTH  = 800
     LANDSCAPE_IMAGE_HEIGHT = 450
 
-    PASSPORT_IMAGE_WIDTH   = 312
-    PASSPORT_IMAGE_HEIGHT  = 312
+    PASSPORT_IMAGE_WIDTH   = 280
+    PASSPORT_IMAGE_HEIGHT  = 350
 	MAX_IMAGE_SIZE 		   = 10 << 20
 	IMAGE_FORM_KEY		   = "image"
 	IMAGE_LAYOUT_FORM_KEY  = "layout"
@@ -118,7 +118,7 @@ func UploadImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonImageUrl)
 }
 

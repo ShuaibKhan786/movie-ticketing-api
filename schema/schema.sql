@@ -24,9 +24,9 @@ CREATE TABLE user (
 
 CREATE TABLE hall (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    hall_name VARCHAR(255) UNIQUE NOT NULL,
-    hall_manager VARCHAR(255) NOT NULL,
-    hall_contact VARCHAR(255) UNIQUE NOT NULL,
+    name VARCHAR(255) UNIQUE NOT NULL,
+    manager VARCHAR(255) NOT NULL,
+    contact VARCHAR(255) UNIQUE NOT NULL,
     admin_id INT,
     FOREIGN KEY (admin_id) REFERENCES admin(id)
 );
@@ -39,6 +39,14 @@ CREATE TABLE hall_location (
     postal_code VARCHAR(255) NOT NULL,
     latitude DECIMAL(9,6),
     longitude DECIMAL(9,6),
+    hall_id INT,
+    FOREIGN KEY (hall_id) REFERENCES hall(id)
+);
+
+CREATE TABLE hall_operation_time (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    open_time TIME NOT NULL,
+    closed_time TIME NOT NULL,
     hall_id INT,
     FOREIGN KEY (hall_id) REFERENCES hall(id)
 );
@@ -68,13 +76,6 @@ CREATE TABLE seat_type_row_name (
 );
 
 
-CREATE TABLE hall_operation_time (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    open_time TIME NOT NULL,
-    closed_time TIME NOT NULL,
-    hall_id INT,
-    FOREIGN KEY (hall_id) REFERENCES hall(id)
-);
 
 CREATE TABLE poster_urls (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -177,6 +178,8 @@ CREATE TABLE movie_show_timings (
     show_timing TIME NOT NULL,
     ticket_status BOOLEAN,
     movie_show_dates_id INT NOT NULL,
+    pre_expiry_second INT NOT NULL,
+    post_expiry_second INT NOT NULL,
     FOREIGN KEY (movie_show_dates_id) REFERENCES movie_show_dates(id)
 );
 
@@ -193,6 +196,7 @@ CREATE TABLE booking (
     transaction_id VARCHAR(255),
     discount_applied INT,
     amount INT NOT NULL,
+    cash_amount INT NULL,
     mode_of_payment VARCHAR(255) NOT NULL,
     created_at DATETIME,
     updated_at DATETIME,

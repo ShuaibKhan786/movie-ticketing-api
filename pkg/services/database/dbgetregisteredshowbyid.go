@@ -6,10 +6,11 @@ import (
 )
 
 type ShowDetails struct {
-    ShowID     int64  `json:"show_id"`
-    MovieID    int64  `json:"movie_id"`
-    Status     string `json:"status"`
-    MovieTitle string `json:"movie_title"`
+	ShowID     *int64  `json:"show_id"`
+	MovieID    *int64  `json:"movie_id"`
+	Status     *bool   `json:"status"`
+	MovieTitle *string `json:"movie_title"`
+	PosterUrl  *string `json:"movie_poster_url"`
 }
 
 func GetRegisteredShowsByID(ctx context.Context, hallId int64) ([]ShowDetails, error) {
@@ -18,10 +19,11 @@ func GetRegisteredShowsByID(ctx context.Context, hallId int64) ([]ShowDetails, e
 			ms.id, 
 			ms.movie_id, 
 			ms.status, 
-			m.title
+			m.title,
+			pup.url 
 		FROM movie_show ms
-		INNER JOIN movie m
-		ON m.id = ms.movie_id
+		INNER JOIN movie m ON m.id = ms.movie_id
+		INNER JOIN poster_urls pup ON pup.id = m.portrait_poster_url_id
 		WHERE hall_id = ?;
 	`
 
@@ -46,10 +48,11 @@ func GetRegisteredShowsByID(ctx context.Context, hallId int64) ([]ShowDetails, e
 			&show.ShowID,
 			&show.MovieID,
 			&show.Status,
-			&show.MovieTitle); err != nil {
-				return shows, fmt.Errorf("error in scanning the row by hall id %d: %w", hallId, err)
-			}
-		
+			&show.MovieTitle,
+			&show.PosterUrl); err != nil {
+			return shows, fmt.Errorf("error in scanning the row by hall id %d: %w", hallId, err)
+		}
+
 		shows = append(shows, show)
 	}
 

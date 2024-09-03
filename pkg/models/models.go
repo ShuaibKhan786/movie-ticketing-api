@@ -66,21 +66,21 @@ type Profile struct {
 }
 
 type Show struct {
-	Status          string     `json:"status"`
+	Status          bool     `json:"status"`
 	Movie           Movie      `json:"movie"`
 	Cast            Cast       `json:"cast"`
 	MovieShowTiming []ShowDate `json:"movie_show_timing"`
 }
 
 type Movie struct {
-	Id           int64  `json:"id"`
-	Title        string `json:"title"`
-	Description  string `json:"description"`
-	Duration     int64  `json:"duration"`
-	Genre        string `json:"genre"`
-	ReleaseDate  string `json:"release_date"`
-	PortraitUrl  string `json:"portrait_url"`
-	LandscapeUrl string `json:"landscape_url"`
+	Id           *int64  `json:"id"`
+	Title        *string `json:"title"`
+	Description  *string `json:"description"`
+	Duration     *int64  `json:"duration"`
+	Genre        *string `json:"genre"`
+	ReleaseDate  *string `json:"release_date"`
+	PortraitUrl  *string `json:"portrait_url"`
+	LandscapeUrl *string `json:"landscape_url"`
 }
 
 type Cast struct {
@@ -91,9 +91,9 @@ type Cast struct {
 }
 
 type CastBlueprint struct {
-	Id        int64   `json:"id"`
-	Name      string  `json:"name"`
-	Alias     string  `json:"alias"`
+	Id        *int64   `json:"id"`
+	Name      *string  `json:"name"`
+	Alias     *string  `json:"alias"`
 	PosterUrl *string `json:"poster"`
 	// PosterUrl is a pointer because cast posters are optional;
 	// using a pointer allows handling NULL values returned from the database.

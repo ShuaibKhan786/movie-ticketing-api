@@ -32,6 +32,11 @@ func GetShowTimingsByHallID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(showTimings) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	jsonShowTimings, err := utils.EncodeJson(&showTimings)
 	if err != nil {
 		utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError) 

@@ -4,13 +4,27 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
 
+type SearchCast struct {
+	Id *int64 `json:"id"`
+	Name *string `json:"name"`
+	PosterUrl *string `json:"poster_url"`
+}
+
 //TODO: either send the whole details or only ID
-func SearchCastByName(ctx context.Context, role, name string) ([]models.CastBlueprint, error) {
-	const query = `SELECT id, name FROM %s WHERE name LIKE ?`
+func SearchCastByName(ctx context.Context, role, name string) ([]SearchCast, error) {
+	const query = `
+		SELECT 
+			c.id,
+			c.name,
+			pu.url AS poster_url 
+		FROM %s c
+		LEFT JOIN poster_urls pu
+		ON pu.id = c.poster_url_id
+		WHERE c.name LIKE ?
+	`
 	processedQuery := fmt.Sprintf(query, role)
 
 	stmt, err := db.PrepareContext(ctx, processedQuery)
@@ -26,13 +40,14 @@ func SearchCastByName(ctx context.Context, role, name string) ([]models.CastBlue
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 
-	var casts []models.CastBlueprint
+	var casts []SearchCast
 
 	for rows.Next() {
-		var cast models.CastBlueprint
+		var cast SearchCast
 		if err := rows.Scan(
 				&cast.Id,
 				&cast.Name,
+				&cast.PosterUrl,
 			); err != nil {
 				return nil, fmt.Errorf("failed to scan row: %w", err)
 			}

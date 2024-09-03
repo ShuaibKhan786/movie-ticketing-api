@@ -22,7 +22,7 @@ import (
 //         "09:00:00"
 //     ]
 // },
-//		and many more
+// 		and many more
 // ]
 // dates must be send in ascending order e.g. : 2024-07-23, 2024-07-24, 2024-07-25
 func CheckTimingsAvilablity(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func CheckTimingsAvilablity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if conflictTimings == nil {
-		utils.JSONResponse(&w, "no conflicts found", http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -72,6 +72,6 @@ func CheckTimingsAvilablity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusConflict)
 	w.Write(jsonConflictTimings)
 }

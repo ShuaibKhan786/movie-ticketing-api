@@ -14,7 +14,6 @@ import (
 // url schema: http://localhost:3090/api/v1/movie?search_title="movieName"
 // this is common route
 // will be used by admin and user
-
 func SearchMovieByTitle(w http.ResponseWriter, r *http.Request) {
 	title, err := getMovieTitleFromQuery(r)
 	if err != nil {
@@ -27,18 +26,18 @@ func SearchMovieByTitle(w http.ResponseWriter, r *http.Request) {
 
 	movies, err := database.SearchMoviesByTitle(ctx, title)
 	if err != nil {
-		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
+		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if len(movies) == 0 {
-		utils.JSONResponse(&w, "no movies found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	jsonMovies, err := utils.EncodeJson(&movies)
 	if err != nil {
-		utils.JSONResponse(&w, "error encoding movies to JSON", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

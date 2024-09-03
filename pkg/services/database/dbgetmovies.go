@@ -7,23 +7,23 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/models"
 )
 
-func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset int) ([]models.Movie, error) {
+func GetMoviesByStatus(ctx context.Context, status bool, date string, limit, offset int) ([]models.Movie, error) {
+	fmt.Println(status)
+	fmt.Println(date)
+	fmt.Println(limit)
+	fmt.Println(offset)
 	const query = `
 		SELECT 
 			m.id,
 			m.title,
-			m.description,
 			m.duration,
 			m.genre,
 			m.release_date,
-			pup.url AS portrait_url,
-			pul.url AS landscape_url
+			pup.url AS portrait_url
 		FROM 
 			movie m
 		INNER JOIN 
 			poster_urls pup ON pup.id = m.portrait_poster_url_id
-		INNER JOIN 
-			poster_urls pul ON pul.id = m.landscape_poster_url_id
 		INNER JOIN (
 			SELECT 
 				ms.movie_id
@@ -37,8 +37,7 @@ func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset i
 				ms.movie_id
 			ORDER BY 
 				MIN(mst.show_date) ASC
-			LIMIT 
-				? OFFSET ?
+			LIMIT ? OFFSET ?
 		) filtered_movies ON m.id = filtered_movies.movie_id;
 	`
 
@@ -48,18 +47,18 @@ func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset i
 	}
 	defer rows.Close()
 
+	fmt.Println(rows.Columns())
+
 	var movies []models.Movie
 	for rows.Next() {
 		var movie models.Movie
 		if err := rows.Scan(
 			&movie.Id,
 			&movie.Title,
-			&movie.Description,
 			&movie.Duration,
 			&movie.Genre,
 			&movie.ReleaseDate,
 			&movie.PortraitUrl,
-			&movie.LandscapeUrl,
 		); err != nil {
 			return nil, fmt.Errorf("rows scanning: %w", err)
 		}
@@ -70,5 +69,6 @@ func GetMoviesByStatus(ctx context.Context, status, date string, limit, offset i
 		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
+	fmt.Println(movies)
 	return movies, nil
 }

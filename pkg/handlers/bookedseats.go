@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"io"
 	"net/http"
 	"time"
@@ -132,7 +133,13 @@ func BookedSeats(w http.ResponseWriter, r *http.Request) {
 
 	tickets, err := database.UpdateBookingSeats(ctx, userID, timingID, details, seatsMD, role)
 	if err != nil {
-		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
+		switch {
+		case errors.Is(err, database.ErrSeatsAlreadyBooked),
+			errors.Is(err, database.ErrExpiredReservedSeats):
+			utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
+		default:
+			utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
+		}
 		return
 	}
 

@@ -16,7 +16,7 @@ import (
 // page and size is for pagination
 
 type MoviesQuery struct{
-	Status string
+	Status bool
 	Date string
 	Limit int
 	Offset int
@@ -24,13 +24,13 @@ type MoviesQuery struct{
 
 //url schema: http://localhost:3090/api/v1/movies?status=upcoming&page=1&size=3 
 func GetMovies(w http.ResponseWriter, r *http.Request) {
-	moviesQuery, err := getMoviesQueryFromQuery(r)	
+	moviesQuery, err := getMoviesQueryFromQuery(r)
 	if err != nil {
 		utils.JSONResponse(&w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 500 * time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 	defer cancel()
 
 	movies, err := database.GetMoviesByStatus(ctx,
@@ -43,7 +43,7 @@ func GetMovies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if (len(movies) == 0) {
+	if len(movies) == 0 {
 		utils.JSONResponse(&w, "no more movies", http.StatusNotFound)
 		return
 	}
@@ -59,40 +59,40 @@ func GetMovies(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonMovies)
 }
 
-
-func getMoviesQueryFromQuery(r *http.Request) (MoviesQuery, error){
+func getMoviesQueryFromQuery(r *http.Request) (MoviesQuery, error) {
 	status := r.URL.Query().Get("status")
 	if status == "" {
 		return MoviesQuery{}, errors.New("missing or empty 'status' query parameter")
 	}
-	page := r.URL.Query().Get("page")
-	if page == "" {
-		return MoviesQuery{}, errors.New("missing or empty 'page' query parameter")
-	}
-	size := r.URL.Query().Get("size")
-	if size == "" {
-		return MoviesQuery{}, errors.New("missing or empty 'size' query parameter")
-	}
-
 	if !isThisValidStatus(status) {
 		return MoviesQuery{}, errors.New("invalid status")
 	}
 
-	pageInt, err := strconv.Atoi(page)
-	if err != nil {
-		return MoviesQuery{}, errors.New("invalid page")
+	pageStr := r.URL.Query().Get("page")
+	pageInt := 1
+	if pageStr != "" {
+		var err error
+		pageInt, err = strconv.Atoi(pageStr)
+		if err != nil {
+			return MoviesQuery{}, errors.New("invalid page")
+		}
 	}
 
-	sizeInt, err := strconv.Atoi(size)
-	if err != nil {
-		return MoviesQuery{}, errors.New("invalid size")
+	sizeStr := r.URL.Query().Get("size")
+	sizeInt := 5
+	if sizeStr != "" {
+		var err error
+		sizeInt, err = strconv.Atoi(sizeStr)
+		if err != nil {
+			return MoviesQuery{}, errors.New("invalid size")
+		}
 	}
 
 	offset := (pageInt - 1) * sizeInt
-	date := time.Now().Format(time.DateOnly) // returns in this format yyyy-mm-dd
+	date := time.Now().Format(time.DateOnly) // returns in yyyy-mm-dd format
 
 	return MoviesQuery{
-		Status: status,
+		Status: getCorrespondingState(status),
 		Limit: sizeInt,
 		Offset: offset,
 		Date: date,
@@ -101,10 +101,17 @@ func getMoviesQueryFromQuery(r *http.Request) (MoviesQuery, error){
 
 func isThisValidStatus(status string) bool {
 	switch status {
-	case "incinemas",
-		"upcoming":
+	case "incinemas", "upcoming":
 		return true
 	default:
+		return false
+	}
+}
+
+func getCorrespondingState(status string) bool {
+	if status == "incinemas" {
+		return true
+	}else {
 		return false
 	}
 }

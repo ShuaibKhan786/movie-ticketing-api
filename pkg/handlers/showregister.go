@@ -17,8 +17,8 @@ import (
 )
 
 //TODO:
-//	1.check if hall register or not
-//	2.if hall registered continue the movie registration
+//	1. check if hall register or not
+//	2. if hall registered continue the movie registration
 //	3. registered the movie : movie_id
 //	4. registered the movie_show using movie_id , hall_id
 //	5. registered the movie_show_timing using movie_show_id
@@ -60,7 +60,7 @@ func ShowRegister(w http.ResponseWriter, r *http.Request) {
 
 	var show models.Show
 	if err := utils.DecodeJson(body, &show); err != nil{
-		utils.JSONResponse(&w, "failed to encode the json payload", http.StatusInternalServerError)
+		utils.JSONResponse(&w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

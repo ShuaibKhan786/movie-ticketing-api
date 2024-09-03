@@ -49,7 +49,7 @@ func EnsureTokenAuth(next http.Handler) http.Handler {
 		}
 
 		if isURIContainsThatPattern(r.URL.Path, "/refresh/token") {
-			utils.JSONResponse(&w, "access token is still valid", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 

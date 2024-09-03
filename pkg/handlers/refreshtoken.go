@@ -13,15 +13,12 @@ import (
 	"github.com/ShuaibKhan786/movie-ticketing-api/pkg/utils"
 )
 
-//TODO: do some clean up and refactor the code
-
 func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	claims, ok := r.Context().Value(config.ClaimsContextKey).(security.Claims)
 	if !ok {
 		utils.JSONResponse(&w, "invalid claims", http.StatusBadRequest)
 		return
 	}
-	fmt.Println(claims)
 
 	cookie, err := r.Cookie(config.RefreshTokenCookieName)
 	if err != nil {
@@ -29,7 +26,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, http.ErrNoCookie):
 			utils.JSONResponse(&w, "refresh token cookie not found", http.StatusBadRequest)
 		default:
-			utils.JSONResponse(&w, "internal server error while retrieving refresh token cookie", http.StatusInternalServerError)
+			utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -41,28 +38,28 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	redisRefreshToken, err := redisdb.Get(redisCtx, redisKey)
 	if err != nil {
-		utils.JSONResponse(&w, "internal server error while fetching refresh token from Redis", http.StatusInternalServerError)
+		utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	if redisRefreshToken == "" {
-		utils.JSONResponse(&w, "session expired, please log in again", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if redisRefreshToken != refreshToken {
-		utils.JSONResponse(&w, refreshToken+"invalid refresh token"+redisRefreshToken, http.StatusForbidden)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
 	claims.Exp = time.Now().Add(time.Hour * 1).Unix()
 	newTokenString, err := security.GenerateJWTtoken(config.Env.JWTSECRETKEY, claims)
 	if err != nil {
-		utils.JSONResponse(&w, "internal server error while generating new JWT token", http.StatusInternalServerError)
+		utils.JSONResponse(&w, "internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	cookieExp := time.Now().Add(time.Hour * 24 * 7)
 	utils.SetCookie(&w, config.JWTAuthCookieName, newTokenString, cookieExp)
-	utils.JSONResponse(&w, "successfully refreshed the token", http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
