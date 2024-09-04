@@ -42,6 +42,8 @@ func RegisterProtectedRouter(router *http.ServeMux) {
 	router.HandleFunc("POST /admin/hall/show/ticket/release/{timing_id}", SetTimingTicketStatusTrue)
 	router.HandleFunc("POST /admin/seats/checkout/{timing_id}", CheckoutSeats)
 	router.HandleFunc("POST /admin/seats/book/{timing_id}", BookedSeats)
+	router.HandleFunc("GET /admin/movie", AdminSearchMovieByTitle)
+
 
 	router.HandleFunc("GET /admin/tickets/sold", GetTicketsSold)
 

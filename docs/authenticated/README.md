@@ -223,14 +223,23 @@ This API provides endpoints for managing movie hall registrations, seat layouts,
    - Status Code: `500 Internal Server Error`
         internal server error
 
-### 4. Get All Registered Movies/Shows of an Admin
+### 4. Get All Registered Movies/Shows of an Admin (Dual Purpose)
  - **Method**: `GET`
- - **Endpoint**: `/api/v1/auth/admin/hall/shows`
+ - **Endpoint**: `/api/v1/auth/admin/hall/shows?status="status"&page=1&size=5`
  - **Description**: Allows an admin to retrieves all registered movies or shows for an admin.
+ - **Note**: This endpoint used in two ways
+      1. for retriving all the registered movies or show (everything)
+      2. for retriving the registered movies or show that is avilable for booking ticket
  - **Request Parameter**
-    - Headers:
+    - **Headers**:
       - `Content-Type`: `application/json`
       - `WithCredentials`: `true`
+    - **Query Parameter**:
+      - status: only `released` value
+        - `required` if used in the ticket booking process
+        - `optional` if used for retriving all the registered shows/ movies by an admin
+      - page (required): The page number of results to retrieve. Default is `1`
+      - size (optional): The number of results per page. Default is `5`
   - **Response**
    - Status Code: `200 Status OK`
       ```json
@@ -250,14 +259,21 @@ This API provides endpoints for managing movie hall registrations, seat layouts,
       inavlid access token or expired (so renew it)
    - Status Code: `500 Internal Server Error`
       internal server error
-### 5. Get All Timings for a Movie/Show
+### 5. Get All Timings for a Movie/Show (Dual Purpose)
  - **Method**: `GET`
- - **Endpoint**: `/api/v1/auth/admin/hall/show/{show_id}/timings`
+ - **Endpoint**: `/api/v1/auth/admin/hall/show/{show_id}/timings?status="status"`
  - **Description**: Allows an admin to retrieved all registered timings for a specific movie or show.
+ - **Note**: This endpoint used in two ways
+    1. for retriving all the timings of a movie or show (everything)
+    2. for retriving the timing of a movie or show that is avilable for booking ticket
  - **Request Parameter**
     - **Headers**:
       - `Content-Type`: `application/json`
       - `WithCredentials`: `true`
+    - **Query Parameter**:
+      - status: only `released` value
+        - `required` if used in the ticket booking process
+        - `optional` if used for retriving all the timing of a movie / show by an admin
     - **Path Parameter**:
       - show_id (required): The ID of the show for which you want to retrieve timings. `eg: /api/v1/auth/admin/hall/show/1/timings`
   - **Response**
@@ -329,10 +345,39 @@ This API provides endpoints for managing movie hall registrations, seat layouts,
       inavlid access token or expired (so renew it)
    - Status Code: `500 Internal Server Error`
       internal server error
-
+---
+### 7. Search for a Movie Registered by Admin
+ - **Method**: `GET`
+ - **Endpoint**: `/api/v1/auth/admin/movie?search_title="movie_title"`
+ - **Description**: This endpoint allows an admin to search for a movie or show that is registered and available for ticket booking.
+ - **Request Parameter**
+   - **Headers**:
+      - `Content-Type`: `application/json`
+      - `WithCredentials`: `true`
+    - **Path Parameter**:
+      - search_title (required): The movie title to search for.
+        ```query
+        /api/v1/movie?search_title=Batman
+ - **Response** 
+   - Status Code: `302 Status Found`
+        ```json
+        [
+            {
+                "id": 1,
+                "title": "Batman Begins",
+                "portrait_url": "http://localhost:8080/public/static/images/4b092dd6aed34bf0a4c64b1b5eccb242.webp"
+            },
+            // ...additional movies
+        ]
+   - Status Code: `400 Bad Request`
+        query parameter missing
+   - Status Code: `404 Not Found`
+        movie not found        
+   - Status Code: `500 Internal Server Error`
+        internal server error
 ---
 ## Book Tickets for Client (Admin)
-### 1. Checkout Hall Seats for Booking a Ticket(s) (ADMIN)
+### 8. Checkout Hall Seats for Booking a Ticket(s) (ADMIN)
 - **Method**: `POST`
 - **Endpoint**: `/api/v1/auth/admin/seats/checkout/{timing_id}`
 - **Description**:  Allows an admin to check out one or multiple seats for booking on behalf of a client. All selected seats must be of the same type. For example
@@ -383,7 +428,7 @@ This API provides endpoints for managing movie hall registrations, seat layouts,
         - invalid body payload      
    - Status Code: `500 Internal Server Error`
         internal server error
-### 2. Book Tickets for Reserved Seats (ADMIN)
+### 9. Book Tickets for Reserved Seats (ADMIN)
 - **Method**: `POST`
 - **Endpoint**: `/api/v1/auth/admin/seats/book/{timing_id}`
 - **Description**: Allows an admin to book one or more seats that have been reserved for a client.

@@ -187,3 +187,4 @@ This API provides a set of utility routes designed for both admin and user roles
         inavlid access token or expired (so renew it)
    - Status Code: `500 Internal Server Error`
         internal server error
+
