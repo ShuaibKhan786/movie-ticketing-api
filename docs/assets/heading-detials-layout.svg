@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="300">
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 50px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        .header {
+            margin: 0;
+            font-weight: bold;
+        }
+        .utility {
+            color: #f08c00;
+        }
+        .public {
+            color: #1971c2;
+        }
+        .authenticated {
+            color: #2f9e44;
+        }
+        .text {
+            color: #1e1e1e;
+        }
+    </style>
+
+    <foreignObject x="0" y="0" width="800" height="300">
+        <div xmlns="http://www.w3.org/1999/xhtml" class="container">
+            <div>
+                <h2 class="header utility">UTILITY</h2>
+                <div class="text">1. Search movie</div>
+            </div>
+            <div>
+                <h2 class="header public">PUBLIC</h2>
+                <div class="text">1. Movies</div>
+                <div class="text">2. Movie details</div>
+                <div class="text">3. Available Hall of that movie</div>
+                <div class="text">4. Available Timings of that movie of a hall</div>
+                <div class="text">5. Hall Seat Layout</div>
+                <div class="text">6. Checkout Hall Seats for Booking a Ticket(s) (USER)</div>
+                <div class="text">7. Book Tickets for Reserved Seats (USER)</div>
+            </div>
+            <div>
+                <h2 class="header authenticated">AUTHENTICATED</h2>
+                <div class="text">4. Get All Registered Movies/Shows of an Admin (Dual Purpose)</div>
+                <div class="text">5. Get All Timings for a Movie/Show (Dual Purpose)</div>
+                <div class="text">7. Search for a Movie Registered by Admin</div>
+                <div class="text">8. Checkout Hall Seats for Booking a Ticket(s) (ADMIN)</div>
+                <div class="text">9. Book Tickets for Reserved Seats (ADMIN)</div>
+            </div>
+        </div>
+    </foreignObject>
+</svg>
