@@ -2,6 +2,7 @@
 <div align="center">
     <img src="./assets/heading-detials-layout.svg" alt="Booking Process Flow"/>
 </div>
+<br>
 <div align="center">
     <img src="./assets/booking-process-flow.svg" alt="Booking Process Flow"/>
 </div>
@@ -10,8 +11,8 @@
 <div align="center">
     <img src="./assets/workflow-of-registration.svg" alt="Booking Process Flow"/>
 </div>
-<br><br>
-<br><br>
+<br>
+<br>
 
 # DATABASE SCHEMA
 <div align="center">
