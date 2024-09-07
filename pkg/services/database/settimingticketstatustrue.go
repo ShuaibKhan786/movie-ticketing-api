@@ -32,6 +32,13 @@ func SetTimingTicketStatusTrue(ctx context.Context, timingID int64) error {
 		return err
 	}
 
+	
+	err = setMovieShowStatusTrue(ctx, tx, timingID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
 	err = initialSeatRegsRedis(ctx, tx, timingID)
 	if err != nil {
 		tx.Rollback()
@@ -46,6 +53,29 @@ func setStatusTrue(ctx context.Context, tx *sql.Tx, timingID int64) error {
 		UPDATE movie_show_timings 
 		SET ticket_status = true
 		WHERE id = ?;
+	`
+
+	stmt, err := tx.PrepareContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("movie_show_timings: preparing query: %v", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx, timingID)
+	if err != nil {
+		return fmt.Errorf("movie_show_timings: executing query: %v", err)
+	}
+
+	return nil
+}
+
+func setMovieShowStatusTrue(ctx context.Context, tx *sql.Tx, timingID int64) error {
+	query := `
+		UPDATE movie_show ms
+		JOIN movie_show_dates msd ON ms.id = msd.movie_show_id  
+		JOIN movie_show_timings mst ON msd.id = mst.movie_show_dates_id
+		SET status = true
+		WHERE mst.id = ?;
 	`
 
 	stmt, err := tx.PrepareContext(ctx, query)

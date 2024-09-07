@@ -36,3 +36,4 @@ func InitRedis() error {
 	})
 	return err
 }
+

@@ -257,6 +257,20 @@ func (timingID TimingID) CleanupReservedSeats(ctx context.Context) error {
 	return nil
 }
 
+func (timingID TimingID)CheckReservedSeatExists(ctx context.Context) (bool, error) {
+	reservedKey := fmt.Sprintf(
+		RESERVED_SEAT_KEY,
+		timingID,
+	)
+
+	ok, err := rdb.Exists(ctx, reservedKey).Result()
+	if err != nil {
+		return false, fmt.Errorf("checking booked seats key exists: %w", err)
+	}
+
+	return ok == 1, nil
+}
+
 // Utility functions
 
 func generateTTL(duration int64) float64 {

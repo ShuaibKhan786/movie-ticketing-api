@@ -124,3 +124,17 @@ func (timingID TimingID) GetAllBookedSeats(ctx context.Context) ([]string, error
 
 	return seats, nil
 }
+
+func (timingID TimingID) CheckBookedSeatExists(ctx context.Context) (bool, error) {
+	bookedKey := fmt.Sprintf(
+		BOOKED_SEAT_KEY,
+		timingID,
+	)
+
+	ok, err := rdb.Exists(ctx, bookedKey).Result()
+	if err != nil {
+		return false, fmt.Errorf("checking booked seats key exists: %w", err)
+	}
+
+	return ok == 1, nil
+}

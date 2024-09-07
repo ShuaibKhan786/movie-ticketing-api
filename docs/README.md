@@ -13,6 +13,11 @@
 </div>
 <br>
 <br>
+<div align="center">
+    <img src="./assets/workflow-of-ticket-release.svg" alt="Booking Process Flow"/>
+</div>
+<br>
+<br>
 
 # DATABASE SCHEMA
 <div align="center">
